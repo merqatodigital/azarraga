@@ -2163,7 +2163,7 @@ function MultiFileUploader({
     if (!files || files.length === 0) return;
     const results: { src: string; alt: string; type: MediaType }[] = [];
     for (const file of Array.from(files)) {
-      const dataUrl = await readFileAsDataUrl(file);
+      const src = await uploadFile(file);
       results.push({
         src: dataUrl,
         alt: file.name,
