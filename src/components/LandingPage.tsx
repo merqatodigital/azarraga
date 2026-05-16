@@ -2165,7 +2165,7 @@ function MultiFileUploader({
     for (const file of Array.from(files)) {
       const src = await uploadFile(file);
       results.push({
-        src: dataUrl,
+        src,
         alt: file.name,
         type: file.type.startsWith("video") ? "video" : "image",
       });
