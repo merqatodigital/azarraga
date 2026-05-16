@@ -2092,10 +2092,10 @@ function MediaEditor({
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const dataUrl = await readFileAsDataUrl(file);
+    const src = await uploadFile(file);
     onChange({
       ...media,
-      src: dataUrl,
+      src,
       alt: media.alt || file.name,
       type: file.type.startsWith("video") ? "video" : "image",
     });
