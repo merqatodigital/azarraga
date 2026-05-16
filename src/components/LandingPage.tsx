@@ -1,4 +1,9 @@
-import { useEffect, useMemo, useState, type CSSProperties, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { getSiteContent, saveSiteContent, uploadSiteMedia } from "@/lib/site-content.functions";
+
+// Holds the admin passkey after successful login so MediaEditor/MultiFileUploader
+// can call the upload server fn without prop-threading through every section.
+let currentPasskey: string | null = null;
 
 type MediaType = "image" | "video";
 type IconName =
