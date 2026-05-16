@@ -967,7 +967,12 @@ export default function App() {
                       <h3 className="text-lg font-bold text-slate-900" style={{ fontFamily: site.theme.headingFont }}>
                         Edit landing page content
                       </h3>
-                      <p className="text-[12px] text-slate-500">Changes auto-save in this browser.</p>
+                      <p className="text-[12px] text-slate-500">
+                        {saveStatus === "saving" && "Saving to cloud…"}
+                        {saveStatus === "saved" && "All changes saved to cloud."}
+                        {saveStatus === "error" && <span className="text-red-500">Cloud save failed — changes kept locally.</span>}
+                        {saveStatus === "idle" && "Changes auto-save to the cloud."}
+                      </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <button
