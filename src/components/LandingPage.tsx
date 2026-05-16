@@ -376,10 +376,46 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [passkey, setPasskey] = useState("");
   const [authError, setAuthError] = useState("");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const hydratedRef = useRef(false);
+  const initialLoadRef = useRef(true);
 
+  // Load saved content from the cloud on mount
+  useEffect(() => {
+    let cancelled = false;
+    getSiteContent()
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        setSite((current) => deepMerge(current, data));
+      })
+      .catch((err) => console.error("Failed to load site content:", err))
+      .finally(() => {
+        hydratedRef.current = true;
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Keep a local cache + debounce-save to the cloud while signed in as admin
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(site));
-  }, [site]);
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    if (!isAdmin || !currentPasskey) return;
+    setSaveStatus("saving");
+    const handle = setTimeout(() => {
+      saveSiteContent({ data: { passkey: currentPasskey!, data: site as unknown as Record<string, unknown> } })
+        .then(() => setSaveStatus("saved"))
+        .catch((err) => {
+          console.error("Failed to save site content:", err);
+          setSaveStatus("error");
+        });
+    }, 800);
+    return () => clearTimeout(handle);
+  }, [site, isAdmin]);
 
   const themeVars = useMemo(
     () =>
@@ -415,6 +451,7 @@ export default function App() {
   const handleLogin = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (passkey === PASSKEY) {
+      currentPasskey = passkey;
       setIsAdmin(true);
       setPasskey("");
       setAuthError("");
