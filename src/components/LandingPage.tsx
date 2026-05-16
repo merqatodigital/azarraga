@@ -1,4 +1,9 @@
-import { useEffect, useMemo, useState, type CSSProperties, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { getSiteContent, saveSiteContent, uploadSiteMedia } from "@/lib/site-content.functions";
+
+// Holds the admin passkey after successful login so MediaEditor/MultiFileUploader
+// can call the upload server fn without prop-threading through every section.
+let currentPasskey: string | null = null;
 
 type MediaType = "image" | "video";
 type IconName =
@@ -371,10 +376,46 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [passkey, setPasskey] = useState("");
   const [authError, setAuthError] = useState("");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const hydratedRef = useRef(false);
+  const initialLoadRef = useRef(true);
 
+  // Load saved content from the cloud on mount
+  useEffect(() => {
+    let cancelled = false;
+    getSiteContent()
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        setSite((current) => deepMerge(current, data));
+      })
+      .catch((err) => console.error("Failed to load site content:", err))
+      .finally(() => {
+        hydratedRef.current = true;
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Keep a local cache + debounce-save to the cloud while signed in as admin
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(site));
-  }, [site]);
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      return;
+    }
+    if (!isAdmin || !currentPasskey) return;
+    setSaveStatus("saving");
+    const handle = setTimeout(() => {
+      saveSiteContent({ data: { passkey: currentPasskey!, data: site as unknown as Record<string, unknown> } })
+        .then(() => setSaveStatus("saved"))
+        .catch((err) => {
+          console.error("Failed to save site content:", err);
+          setSaveStatus("error");
+        });
+    }, 800);
+    return () => clearTimeout(handle);
+  }, [site, isAdmin]);
 
   const themeVars = useMemo(
     () =>
@@ -410,6 +451,7 @@ export default function App() {
   const handleLogin = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (passkey === PASSKEY) {
+      currentPasskey = passkey;
       setIsAdmin(true);
       setPasskey("");
       setAuthError("");
@@ -925,7 +967,12 @@ export default function App() {
                       <h3 className="text-lg font-bold text-slate-900" style={{ fontFamily: site.theme.headingFont }}>
                         Edit landing page content
                       </h3>
-                      <p className="text-[12px] text-slate-500">Changes auto-save in this browser.</p>
+                      <p className="text-[12px] text-slate-500">
+                        {saveStatus === "saving" && "Saving to cloud…"}
+                        {saveStatus === "saved" && "All changes saved to cloud."}
+                        {saveStatus === "error" && <span className="text-red-500">Cloud save failed — changes kept locally.</span>}
+                        {saveStatus === "idle" && "Changes auto-save to the cloud."}
+                      </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <button
@@ -2050,10 +2097,10 @@ function MediaEditor({
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    const dataUrl = await readFileAsDataUrl(file);
+    const src = await uploadFile(file);
     onChange({
       ...media,
-      src: dataUrl,
+      src,
       alt: media.alt || file.name,
       type: file.type.startsWith("video") ? "video" : "image",
     });
@@ -2121,9 +2168,9 @@ function MultiFileUploader({
     if (!files || files.length === 0) return;
     const results: { src: string; alt: string; type: MediaType }[] = [];
     for (const file of Array.from(files)) {
-      const dataUrl = await readFileAsDataUrl(file);
+      const src = await uploadFile(file);
       results.push({
-        src: dataUrl,
+        src,
         alt: file.name,
         type: file.type.startsWith("video") ? "video" : "image",
       });
@@ -2328,4 +2375,33 @@ function readFileAsDataUrl(file: File) {
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
+}
+
+// Upload to Supabase Storage when admin is signed in; fall back to inline data URL otherwise.
+async function uploadFile(file: File): Promise<string> {
+  if (!currentPasskey) {
+    return readFileAsDataUrl(file);
+  }
+  try {
+    const buf = await file.arrayBuffer();
+    let binary = "";
+    const bytes = new Uint8Array(buf);
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)) as number[]);
+    }
+    const dataBase64 = btoa(binary);
+    const { url } = await uploadSiteMedia({
+      data: {
+        passkey: currentPasskey,
+        fileName: file.name || "upload",
+        contentType: file.type || "application/octet-stream",
+        dataBase64,
+      },
+    });
+    return url;
+  } catch (err) {
+    console.error("Upload failed, falling back to data URL:", err);
+    return readFileAsDataUrl(file);
+  }
 }
