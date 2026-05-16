@@ -36,7 +36,7 @@ export const saveSiteContent = createServerFn({ method: "POST" })
     assertPasskey(data.passkey);
     const { error } = await supabaseAdmin
       .from("site_content")
-      .upsert({ id: SITE_ID, data: data.data, updated_at: new Date().toISOString() });
+      .upsert({ id: SITE_ID, data: data.data as never, updated_at: new Date().toISOString() });
     if (error) throw new Error(error.message);
     return { ok: true };
   });
