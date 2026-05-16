@@ -2371,3 +2371,32 @@ function readFileAsDataUrl(file: File) {
     reader.readAsDataURL(file);
   });
 }
+
+// Upload to Supabase Storage when admin is signed in; fall back to inline data URL otherwise.
+async function uploadFile(file: File): Promise<string> {
+  if (!currentPasskey) {
+    return readFileAsDataUrl(file);
+  }
+  try {
+    const buf = await file.arrayBuffer();
+    let binary = "";
+    const bytes = new Uint8Array(buf);
+    const chunk = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunk) {
+      binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)) as number[]);
+    }
+    const dataBase64 = btoa(binary);
+    const { url } = await uploadSiteMedia({
+      data: {
+        passkey: currentPasskey,
+        fileName: file.name || "upload",
+        contentType: file.type || "application/octet-stream",
+        dataBase64,
+      },
+    });
+    return url;
+  } catch (err) {
+    console.error("Upload failed, falling back to data URL:", err);
+    return readFileAsDataUrl(file);
+  }
+}
