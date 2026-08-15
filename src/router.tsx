@@ -1,5 +1,6 @@
-import { type CreatedResponse, createRouter } from "@tanstack/react-router";
+import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { QueryClient } from "@tanstack/react-query";
 
 export const getRouter = () => {
   const queryClient = new QueryClient();
@@ -13,5 +14,3 @@ export const getRouter = () => {
 
   return router;
 };
-
-import { QueryClient } from "@tanstack/react-query";
