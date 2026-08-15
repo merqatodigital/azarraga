@@ -1,110 +1,78 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { PageHeader } from "@/components/admin/PageHeader";
-import { EmptyState } from "@/components/admin/EmptyState";
 import { useState } from "react";
 
-export const Route = createFileRoute("/admin/tala/")({
-  component: TalaActivityPage,
-});
+export const Route = createFileRoute("/admin/tala/")({ component: TalaActivityPage });
 
-type Tab = "activity" | "messages" | "approvals" | "notifications";
+type Message = { role: "owner" | "tala"; text: string };
 
 function TalaActivityPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("activity");
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "tala", text: "TALA workspace is ready. Connect an OpenRouter model in Settings to begin live operations." },
+  ]);
+
+  function queueMessage() {
+    const text = input.trim();
+    if (!text) return;
+    setMessages((current) => [...current, { role: "owner", text }, { role: "tala", text: "Model connection is being wired server-side. I will use Azarraga business tools here once the provider is connected." }]);
+    setInput("");
+  }
 
   return (
     <AdminLayout>
-      <PageHeader
-        title="TALA Activity"
-        subtitle="Agent operational log, messages, actions, and approval requests"
-      />
+      <PageHeader title="TALA" subtitle="Azarraga Glass & Aluminum business operations agent" />
 
-      {/* Status cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">WhatsApp Channel</p>
-          <p className="mt-2 text-xl font-semibold text-gray-900">Not connected</p>
-          <p className="mt-1 text-sm text-gray-500">
-            WhatsApp webhook is not yet configured. TALA cannot send or receive WhatsApp messages until a channel adapter is wired.
-          </p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">TALA Runtime</p>
-          <p className="mt-2 text-xl font-semibold text-gray-900">Standby</p>
-          <p className="mt-1 text-sm text-gray-500">
-            The agent runtime is prepared but not yet receiving tasks. Model provider and tools will be configured in Settings.
-          </p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Recent Messages</p>
-          <p className="mt-2 text-xl font-semibold text-gray-900">None</p>
-          <p className="mt-1 text-sm text-gray-500">
-            No messages received yet. Once WhatsApp is connected, inbound and outbound messages will be logged here.
-          </p>
-        </div>
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Approval Requests</p>
-          <p className="mt-2 text-xl font-semibold text-gray-900">0</p>
-          <p className="mt-1 text-sm text-gray-500">
-            No pending approvals. Financial actions prepared by TALA require owner approval before issuance.
-          </p>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Status label="TALA Runtime" value="Integration" detail="Hosted runtime is being connected to this workspace." />
+        <Status label="Model Provider" value="OpenRouter" detail="Free-model discovery and connection test are implemented in the TALA runtime." />
+        <Status label="Financial Approval" value="Required" detail="Quotes, invoices and payment actions remain owner-controlled." />
       </div>
 
-      {/* Tabs */}
-      <div className="mt-6 border-b border-gray-200">
-        <nav className="flex gap-4 px-4">
-          {(["activity", "messages", "approvals", "notifications"] as Tab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`text-sm font-medium border-b-2 pb-3 transition-colors ${
-                activeTab === tab
-                  ? "border-blue-900 text-blue-900"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
-              }`}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </nav>
-      </div>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
+        <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
+          <div className="border-b border-gray-200 px-5 py-4">
+            <h2 className="font-semibold text-gray-900">Ask TALA</h2>
+            <p className="text-sm text-gray-500">Quotes, invoices, collections, leads and project operations.</p>
+          </div>
+          <div className="h-[420px] space-y-3 overflow-y-auto p-5">
+            {messages.map((message, index) => (
+              <div key={index} className={`max-w-[85%] rounded-xl px-4 py-3 text-sm ${message.role === "owner" ? "ml-auto bg-blue-950 text-white" : "bg-gray-100 text-gray-800"}`}>
+                {message.text}
+              </div>
+            ))}
+          </div>
+          <div className="flex gap-2 border-t border-gray-200 p-4">
+            <input
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={(event) => { if (event.key === "Enter") queueMessage(); }}
+              placeholder="Ask TALA what needs attention..."
+              className="min-w-0 flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-blue-900"
+            />
+            <button onClick={queueMessage} className="rounded-lg bg-blue-950 px-4 py-2 text-sm font-medium text-white hover:bg-blue-900">Send</button>
+          </div>
+        </section>
 
-      {/* Tab content */}
-      <div className="mt-4">
-        {activeTab === "activity" && (
-          <EmptyState
-            title="No activity yet"
-            description="TALA's actions, tool calls, messages, and notifications will be recorded here for audit and review."
-            icon="inbox"
-          />
-        )}
-
-        {activeTab === "messages" && (
-          <EmptyState
-            title="No messages yet"
-            description="Inbound and outbound messages will appear here once WhatsApp is connected."
-            icon="inbox"
-          />
-        )}
-
-        {activeTab === "approvals" && (
-          <EmptyState
-            title="No approval requests"
-            description="Financial actions prepared by TALA require owner approval. Pending approvals will appear here."
-            icon="file"
-          />
-        )}
-
-        {activeTab === "notifications" && (
-          <EmptyState
-            title="No notifications"
-            description="Alerts and notifications from TALA will appear here."
-            icon="alert-circle"
-          />
-        )}
+        <aside className="space-y-4">
+          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+            <h3 className="font-semibold text-gray-900">Quick requests</h3>
+            <div className="mt-3 space-y-2">
+              {["What needs my attention today?", "Show quotes needing approval", "Who owes us money?", "Show overdue invoices", "Show new qualified leads"].map((prompt) => (
+                <button key={prompt} onClick={() => setInput(prompt)} className="w-full rounded-lg border border-gray-200 px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">{prompt}</button>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-900">
+            TALA may prepare financial actions, but owner approval is required before quotes or invoices are issued.
+          </div>
+        </aside>
       </div>
     </AdminLayout>
   );
+}
+
+function Status({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm"><p className="text-xs font-medium uppercase tracking-wide text-gray-500">{label}</p><p className="mt-2 text-xl font-semibold text-gray-900">{value}</p><p className="mt-1 text-sm text-gray-500">{detail}</p></div>;
 }
