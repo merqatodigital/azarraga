@@ -10,33 +10,219 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as AdminCustomersIndexRouteImport } from './routes/admin/customers/index'
+import { Route as AdminDocumentsIndexRouteImport } from './routes/admin/documents/index'
+import { Route as AdminInvoicesIndexRouteImport } from './routes/admin/invoices/index'
+import { Route as AdminLeadsIndexRouteImport } from './routes/admin/leads/index'
+import { Route as AdminMarketingIndexRouteImport } from './routes/admin/marketing/index'
+import { Route as AdminPaymentsIndexRouteImport } from './routes/admin/payments/index'
+import { Route as AdminProjectsIndexRouteImport } from './routes/admin/projects/index'
+import { Route as AdminQuotesIndexRouteImport } from './routes/admin/quotes/index'
+import { Route as AdminSettingsIndexRouteImport } from './routes/admin/settings/index'
+import { Route as AdminTalaIndexRouteImport } from './routes/admin/tala/index'
+import { Route as AdminTasksIndexRouteImport } from './routes/admin/tasks/index'
+import { Route as AdminWebsiteIndexRouteImport } from './routes/admin/website/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginIndexRoute = LoginIndexRouteImport.update({
+  id: '/login/',
+  path: '/login/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminCustomersIndexRoute = AdminCustomersIndexRouteImport.update({
+  id: '/admin/customers/',
+  path: '/admin/customers/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminDocumentsIndexRoute = AdminDocumentsIndexRouteImport.update({
+  id: '/admin/documents/',
+  path: '/admin/documents/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminInvoicesIndexRoute = AdminInvoicesIndexRouteImport.update({
+  id: '/admin/invoices/',
+  path: '/admin/invoices/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLeadsIndexRoute = AdminLeadsIndexRouteImport.update({
+  id: '/admin/leads/',
+  path: '/admin/leads/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminMarketingIndexRoute = AdminMarketingIndexRouteImport.update({
+  id: '/admin/marketing/',
+  path: '/admin/marketing/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminPaymentsIndexRoute = AdminPaymentsIndexRouteImport.update({
+  id: '/admin/payments/',
+  path: '/admin/payments/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminProjectsIndexRoute = AdminProjectsIndexRouteImport.update({
+  id: '/admin/projects/',
+  path: '/admin/projects/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminQuotesIndexRoute = AdminQuotesIndexRouteImport.update({
+  id: '/admin/quotes/',
+  path: '/admin/quotes/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSettingsIndexRoute = AdminSettingsIndexRouteImport.update({
+  id: '/admin/settings/',
+  path: '/admin/settings/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTalaIndexRoute = AdminTalaIndexRouteImport.update({
+  id: '/admin/tala/',
+  path: '/admin/tala/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminTasksIndexRoute = AdminTasksIndexRouteImport.update({
+  id: '/admin/tasks/',
+  path: '/admin/tasks/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminWebsiteIndexRoute = AdminWebsiteIndexRouteImport.update({
+  id: '/admin/website/',
+  path: '/admin/website/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin/': typeof AdminIndexRoute
+  '/login/': typeof LoginIndexRoute
+  '/admin/customers/': typeof AdminCustomersIndexRoute
+  '/admin/documents/': typeof AdminDocumentsIndexRoute
+  '/admin/invoices/': typeof AdminInvoicesIndexRoute
+  '/admin/leads/': typeof AdminLeadsIndexRoute
+  '/admin/marketing/': typeof AdminMarketingIndexRoute
+  '/admin/payments/': typeof AdminPaymentsIndexRoute
+  '/admin/projects/': typeof AdminProjectsIndexRoute
+  '/admin/quotes/': typeof AdminQuotesIndexRoute
+  '/admin/settings/': typeof AdminSettingsIndexRoute
+  '/admin/tala/': typeof AdminTalaIndexRoute
+  '/admin/tasks/': typeof AdminTasksIndexRoute
+  '/admin/website/': typeof AdminWebsiteIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminIndexRoute
+  '/login': typeof LoginIndexRoute
+  '/admin/customers': typeof AdminCustomersIndexRoute
+  '/admin/documents': typeof AdminDocumentsIndexRoute
+  '/admin/invoices': typeof AdminInvoicesIndexRoute
+  '/admin/leads': typeof AdminLeadsIndexRoute
+  '/admin/marketing': typeof AdminMarketingIndexRoute
+  '/admin/payments': typeof AdminPaymentsIndexRoute
+  '/admin/projects': typeof AdminProjectsIndexRoute
+  '/admin/quotes': typeof AdminQuotesIndexRoute
+  '/admin/settings': typeof AdminSettingsIndexRoute
+  '/admin/tala': typeof AdminTalaIndexRoute
+  '/admin/tasks': typeof AdminTasksIndexRoute
+  '/admin/website': typeof AdminWebsiteIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin/': typeof AdminIndexRoute
+  '/login/': typeof LoginIndexRoute
+  '/admin/customers/': typeof AdminCustomersIndexRoute
+  '/admin/documents/': typeof AdminDocumentsIndexRoute
+  '/admin/invoices/': typeof AdminInvoicesIndexRoute
+  '/admin/leads/': typeof AdminLeadsIndexRoute
+  '/admin/marketing/': typeof AdminMarketingIndexRoute
+  '/admin/payments/': typeof AdminPaymentsIndexRoute
+  '/admin/projects/': typeof AdminProjectsIndexRoute
+  '/admin/quotes/': typeof AdminQuotesIndexRoute
+  '/admin/settings/': typeof AdminSettingsIndexRoute
+  '/admin/tala/': typeof AdminTalaIndexRoute
+  '/admin/tasks/': typeof AdminTasksIndexRoute
+  '/admin/website/': typeof AdminWebsiteIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin/'
+    | '/login/'
+    | '/admin/customers/'
+    | '/admin/documents/'
+    | '/admin/invoices/'
+    | '/admin/leads/'
+    | '/admin/marketing/'
+    | '/admin/payments/'
+    | '/admin/projects/'
+    | '/admin/quotes/'
+    | '/admin/settings/'
+    | '/admin/tala/'
+    | '/admin/tasks/'
+    | '/admin/website/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin'
+    | '/login'
+    | '/admin/customers'
+    | '/admin/documents'
+    | '/admin/invoices'
+    | '/admin/leads'
+    | '/admin/marketing'
+    | '/admin/payments'
+    | '/admin/projects'
+    | '/admin/quotes'
+    | '/admin/settings'
+    | '/admin/tala'
+    | '/admin/tasks'
+    | '/admin/website'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin/'
+    | '/login/'
+    | '/admin/customers/'
+    | '/admin/documents/'
+    | '/admin/invoices/'
+    | '/admin/leads/'
+    | '/admin/marketing/'
+    | '/admin/payments/'
+    | '/admin/projects/'
+    | '/admin/quotes/'
+    | '/admin/settings/'
+    | '/admin/tala/'
+    | '/admin/tasks/'
+    | '/admin/website/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+  LoginIndexRoute: typeof LoginIndexRoute
+  AdminCustomersIndexRoute: typeof AdminCustomersIndexRoute
+  AdminDocumentsIndexRoute: typeof AdminDocumentsIndexRoute
+  AdminInvoicesIndexRoute: typeof AdminInvoicesIndexRoute
+  AdminLeadsIndexRoute: typeof AdminLeadsIndexRoute
+  AdminMarketingIndexRoute: typeof AdminMarketingIndexRoute
+  AdminPaymentsIndexRoute: typeof AdminPaymentsIndexRoute
+  AdminProjectsIndexRoute: typeof AdminProjectsIndexRoute
+  AdminQuotesIndexRoute: typeof AdminQuotesIndexRoute
+  AdminSettingsIndexRoute: typeof AdminSettingsIndexRoute
+  AdminTalaIndexRoute: typeof AdminTalaIndexRoute
+  AdminTasksIndexRoute: typeof AdminTasksIndexRoute
+  AdminWebsiteIndexRoute: typeof AdminWebsiteIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +234,123 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/': {
+      id: '/admin/'
+      path: '/admin'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login/': {
+      id: '/login/'
+      path: '/login'
+      fullPath: '/login/'
+      preLoaderRoute: typeof LoginIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/customers/': {
+      id: '/admin/customers/'
+      path: '/admin/customers'
+      fullPath: '/admin/customers/'
+      preLoaderRoute: typeof AdminCustomersIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/documents/': {
+      id: '/admin/documents/'
+      path: '/admin/documents'
+      fullPath: '/admin/documents/'
+      preLoaderRoute: typeof AdminDocumentsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/invoices/': {
+      id: '/admin/invoices/'
+      path: '/admin/invoices'
+      fullPath: '/admin/invoices/'
+      preLoaderRoute: typeof AdminInvoicesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/leads/': {
+      id: '/admin/leads/'
+      path: '/admin/leads'
+      fullPath: '/admin/leads/'
+      preLoaderRoute: typeof AdminLeadsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/marketing/': {
+      id: '/admin/marketing/'
+      path: '/admin/marketing'
+      fullPath: '/admin/marketing/'
+      preLoaderRoute: typeof AdminMarketingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/payments/': {
+      id: '/admin/payments/'
+      path: '/admin/payments'
+      fullPath: '/admin/payments/'
+      preLoaderRoute: typeof AdminPaymentsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/projects/': {
+      id: '/admin/projects/'
+      path: '/admin/projects'
+      fullPath: '/admin/projects/'
+      preLoaderRoute: typeof AdminProjectsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/quotes/': {
+      id: '/admin/quotes/'
+      path: '/admin/quotes'
+      fullPath: '/admin/quotes/'
+      preLoaderRoute: typeof AdminQuotesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/settings/': {
+      id: '/admin/settings/'
+      path: '/admin/settings'
+      fullPath: '/admin/settings/'
+      preLoaderRoute: typeof AdminSettingsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/tala/': {
+      id: '/admin/tala/'
+      path: '/admin/tala'
+      fullPath: '/admin/tala/'
+      preLoaderRoute: typeof AdminTalaIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/tasks/': {
+      id: '/admin/tasks/'
+      path: '/admin/tasks'
+      fullPath: '/admin/tasks/'
+      preLoaderRoute: typeof AdminTasksIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/website/': {
+      id: '/admin/website/'
+      path: '/admin/website'
+      fullPath: '/admin/website/'
+      preLoaderRoute: typeof AdminWebsiteIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminIndexRoute: AdminIndexRoute,
+  LoginIndexRoute: LoginIndexRoute,
+  AdminCustomersIndexRoute: AdminCustomersIndexRoute,
+  AdminDocumentsIndexRoute: AdminDocumentsIndexRoute,
+  AdminInvoicesIndexRoute: AdminInvoicesIndexRoute,
+  AdminLeadsIndexRoute: AdminLeadsIndexRoute,
+  AdminMarketingIndexRoute: AdminMarketingIndexRoute,
+  AdminPaymentsIndexRoute: AdminPaymentsIndexRoute,
+  AdminProjectsIndexRoute: AdminProjectsIndexRoute,
+  AdminQuotesIndexRoute: AdminQuotesIndexRoute,
+  AdminSettingsIndexRoute: AdminSettingsIndexRoute,
+  AdminTalaIndexRoute: AdminTalaIndexRoute,
+  AdminTasksIndexRoute: AdminTasksIndexRoute,
+  AdminWebsiteIndexRoute: AdminWebsiteIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

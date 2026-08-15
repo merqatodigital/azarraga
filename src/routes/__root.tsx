@@ -7,6 +7,8 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
 
@@ -114,10 +116,45 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [session, setSession] = useState<import("@supabase/supabase-js").Session | null>(null);
+  const [user, setUser] = useState<import("@supabase/supabase-js").User | null>(null);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <div className="flex min-h-screen bg-background">
+        {/* Public site */}
+        <Outlet />
+
+        {/* Admin header bar */}
+        {user && (
+          <header className="fixed top-0 right-0 z-50 flex h-12 items-center gap-4 border-b border-border bg-card px-4 shadow-sm">
+            <span className="text-xs font-medium text-muted-foreground">
+              Signed in as {user.email}
+            </span>
+            <button
+              type="button"
+              onClick={() => supabase.auth.signOut()}
+              className="rounded-lg border border-input bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+            >
+              Sign out
+            </button>
+          </header>
+        )}
+      </div>
     </QueryClientProvider>
   );
 }
