@@ -12,10 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as QuoteRequestIndexRouteImport } from './routes/quote-request/index'
 import { Route as AdminCustomersIndexRouteImport } from './routes/admin/customers/index'
 import { Route as AdminDocumentsIndexRouteImport } from './routes/admin/documents/index'
 import { Route as AdminInvoicesIndexRouteImport } from './routes/admin/invoices/index'
 import { Route as AdminLeadsIndexRouteImport } from './routes/admin/leads/index'
+import { Route as AdminLeadsIdRouteImport } from './routes/admin/leads/$id'
 import { Route as AdminMarketingIndexRouteImport } from './routes/admin/marketing/index'
 import { Route as AdminPaymentsIndexRouteImport } from './routes/admin/payments/index'
 import { Route as AdminProjectsIndexRouteImport } from './routes/admin/projects/index'
@@ -40,6 +42,11 @@ const LoginIndexRoute = LoginIndexRouteImport.update({
   path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QuoteRequestIndexRoute = QuoteRequestIndexRouteImport.update({
+  id: '/quote-request/',
+  path: '/quote-request/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminCustomersIndexRoute = AdminCustomersIndexRouteImport.update({
   id: '/admin/customers/',
   path: '/admin/customers/',
@@ -58,6 +65,11 @@ const AdminInvoicesIndexRoute = AdminInvoicesIndexRouteImport.update({
 const AdminLeadsIndexRoute = AdminLeadsIndexRouteImport.update({
   id: '/admin/leads/',
   path: '/admin/leads/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminLeadsIdRoute = AdminLeadsIdRouteImport.update({
+  id: '/admin/leads/$id',
+  path: '/admin/leads/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminMarketingIndexRoute = AdminMarketingIndexRouteImport.update({
@@ -105,6 +117,8 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin/': typeof AdminIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/quote-request/': typeof QuoteRequestIndexRoute
+  '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/customers/': typeof AdminCustomersIndexRoute
   '/admin/documents/': typeof AdminDocumentsIndexRoute
   '/admin/invoices/': typeof AdminInvoicesIndexRoute
@@ -122,6 +136,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminIndexRoute
   '/login': typeof LoginIndexRoute
+  '/quote-request': typeof QuoteRequestIndexRoute
+  '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/customers': typeof AdminCustomersIndexRoute
   '/admin/documents': typeof AdminDocumentsIndexRoute
   '/admin/invoices': typeof AdminInvoicesIndexRoute
@@ -140,6 +156,8 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin/': typeof AdminIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/quote-request/': typeof QuoteRequestIndexRoute
+  '/admin/leads/$id': typeof AdminLeadsIdRoute
   '/admin/customers/': typeof AdminCustomersIndexRoute
   '/admin/documents/': typeof AdminDocumentsIndexRoute
   '/admin/invoices/': typeof AdminInvoicesIndexRoute
@@ -159,6 +177,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin/'
     | '/login/'
+    | '/quote-request/'
+    | '/admin/leads/$id'
     | '/admin/customers/'
     | '/admin/documents/'
     | '/admin/invoices/'
@@ -176,6 +196,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/login'
+    | '/quote-request'
+    | '/admin/leads/$id'
     | '/admin/customers'
     | '/admin/documents'
     | '/admin/invoices'
@@ -193,6 +215,8 @@ export interface FileRouteTypes {
     | '/'
     | '/admin/'
     | '/login/'
+    | '/quote-request/'
+    | '/admin/leads/$id'
     | '/admin/customers/'
     | '/admin/documents/'
     | '/admin/invoices/'
@@ -211,6 +235,8 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminIndexRoute: typeof AdminIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
+  QuoteRequestIndexRoute: typeof QuoteRequestIndexRoute
+  AdminLeadsIdRoute: typeof AdminLeadsIdRoute
   AdminCustomersIndexRoute: typeof AdminCustomersIndexRoute
   AdminDocumentsIndexRoute: typeof AdminDocumentsIndexRoute
   AdminInvoicesIndexRoute: typeof AdminInvoicesIndexRoute
@@ -248,6 +274,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/quote-request/': {
+      id: '/quote-request/'
+      path: '/quote-request'
+      fullPath: '/quote-request/'
+      preLoaderRoute: typeof QuoteRequestIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/customers/': {
       id: '/admin/customers/'
       path: '/admin/customers'
@@ -274,6 +307,13 @@ declare module '@tanstack/react-router' {
       path: '/admin/leads'
       fullPath: '/admin/leads/'
       preLoaderRoute: typeof AdminLeadsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/leads/$id': {
+      id: '/admin/leads/$id'
+      path: '/admin/leads/$id'
+      fullPath: '/admin/leads/$id'
+      preLoaderRoute: typeof AdminLeadsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/marketing/': {
@@ -339,6 +379,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminIndexRoute: AdminIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
+  QuoteRequestIndexRoute: QuoteRequestIndexRoute,
+  AdminLeadsIdRoute: AdminLeadsIdRoute,
   AdminCustomersIndexRoute: AdminCustomersIndexRoute,
   AdminDocumentsIndexRoute: AdminDocumentsIndexRoute,
   AdminInvoicesIndexRoute: AdminInvoicesIndexRoute,
