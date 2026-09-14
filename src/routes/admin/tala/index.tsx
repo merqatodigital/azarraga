@@ -17,7 +17,7 @@ function TalaActivityPage() {
     <AdminLayout>
       <PageHeader
         title="TALA Activity"
-        subtitle="Agent operational log, messages, actions, and approval requests"
+        description="Agent operational log, messages, actions, and approval requests"
       />
 
       {/* Status cards */}

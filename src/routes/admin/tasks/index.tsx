@@ -13,7 +13,7 @@ function TasksPage() {
     <AdminLayout>
       <PageHeader
         title="Tasks"
-        subtitle="Follow-ups, reminders, and operational tasks"
+        description="Follow-ups, reminders, and operational tasks"
       />
 
       <EmptyState
