@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { getSiteContent, saveSiteContent, uploadSiteMedia } from "@/lib/site-content.functions";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 // Holds the admin passkey after successful login so MediaEditor/MultiFileUploader
 // can call the upload server fn without prop-threading through every section.
@@ -54,6 +56,13 @@ interface AboutCard {
   media: MediaItem;
 }
 
+interface ServiceProduct {
+  id: string;
+  name: string;
+  description: string;
+  media: MediaItem[];
+}
+
 interface ServiceCard {
   id: string;
   title: string;
@@ -61,6 +70,7 @@ interface ServiceCard {
   points: string[];
   icon: IconName;
   media: MediaItem;
+  products: ServiceProduct[];
 }
 
 interface ProjectCard {
@@ -91,6 +101,7 @@ interface ThemeData {
 }
 
 interface SiteData {
+  serviceCatalogVersion: number;
   theme: ThemeData;
   header: {
     tagline: string;
@@ -169,6 +180,7 @@ const iconOptions: IconName[] = [
 ];
 
 const defaultSiteData: SiteData = {
+  serviceCatalogVersion: 2,
   theme: {
     primary: "#0b3b8f",
     primaryDark: "#082f73",
@@ -241,27 +253,49 @@ const defaultSiteData: SiteData = {
   services: [
     {
       id: createId(),
-      title: "Custom Glass Systems",
-      desc: "Tempered, laminated, and insulated glass for partitions, railings, shower enclosures, and more.",
-      points: ["Frameless Glass", "Mirror & Glass Cut-to-Size", "Precision Fit"],
-      icon: "glass",
-      media: { id: createId(), type: "image", src: "/images/shower.jpg", alt: "Custom glass system" },
-    },
-    {
-      id: createId(),
-      title: "Aluminum Windows",
-      desc: "Sliding, casement, awning, and fixed windows—engineered for strength, smooth operation, and durability.",
-      points: ["Sliding / Casement / Awning", "Picture / Fixed and More", "Powder Coated Finish"],
+      title: "Windows By Type",
+      desc: "Custom aluminum window systems designed for ventilation, natural light, security, and Palawan's tropical climate.",
+      points: ["Casement Windows", "Awning Windows", "Sliding Windows", "Jalousie Windows", "Fixed Windows", "Folding Windows"],
       icon: "window",
-      media: { id: createId(), type: "image", src: "/images/window.jpg", alt: "Aluminum windows" },
+      media: { id: createId(), type: "image", src: "/images/window.jpg", alt: "Aluminum window systems" },
+      products: createProducts([
+        ["Casement Windows", "Side-hinged windows that open outward for excellent ventilation, a wide view, and a tight weather seal.", "/images/window.jpg"],
+        ["Awning Windows", "Top-hinged windows that open outward, allowing airflow while helping shield interiors from light rain.", "/images/hero-small1.jpg"],
+        ["Sliding Windows", "Space-saving horizontal sliding windows with smooth operation and durable aluminum framing.", "/images/window.jpg"],
+        ["Jalousie Windows", "Adjustable glass-louver windows designed for generous, controllable airflow in tropical spaces.", "/images/hero-small1.jpg"],
+        ["Fixed Windows", "Non-opening picture windows that maximize daylight and clear views with a clean, secure finish.", "/images/window.jpg"],
+        ["Folding Windows", "Multi-panel window systems that fold neatly aside to create a wide, flexible opening.", "/images/hero-main.jpg"],
+      ]),
     },
     {
       id: createId(),
-      title: "Door Installations",
-      desc: "Glass & aluminum doors—frameless, swing, sliding, and folding types for residential and commercial spaces.",
-      points: ["Pivot / Swing / Sliding", "Soft-Close Hardware", "Weather-sealed Performance"],
+      title: "Doors By Type",
+      desc: "Premium glass and aluminum door systems engineered for smooth operation, modern styling, and lasting durability.",
+      points: ["Bi-Fold Doors", "Sliding Doors", "Casement/Swing Doors", "Roll-Up Doors", "Hanging Doors"],
       icon: "door",
-      media: { id: createId(), type: "image", src: "/images/door.jpg", alt: "Glass door installation" },
+      media: { id: createId(), type: "image", src: "/images/door.jpg", alt: "Glass and aluminum door systems" },
+      products: createProducts([
+        ["Bi-Fold Doors", "Connected door panels that fold and stack to open rooms to patios, gardens, or commercial spaces.", "/images/door.jpg"],
+        ["Sliding Doors", "Smooth-gliding glass and aluminum doors that save floor space and bring in expansive natural light.", "/images/hero-main.jpg"],
+        ["Casement/Swing Doors", "Hinged entry doors built to suit residential and commercial openings with dependable hardware.", "/images/door.jpg"],
+        ["Roll-Up Doors", "Compact vertical-opening doors for storefronts, service areas, garages, and secure commercial access.", "/images/commercial.jpg"],
+        ["Hanging Doors", "Top-hung door systems with clean floor lines and smooth movement for contemporary interiors.", "/images/door.jpg"],
+      ]),
+    },
+    {
+      id: createId(),
+      title: "Others By Type",
+      desc: "Specialized architectural glass, metalwork, and exterior solutions for homes and commercial properties.",
+      points: ["Skylight", "Glass Railings", "Sunroom", "Stainless Steel Works", "ACP Cladding & Others"],
+      icon: "glass",
+      media: { id: createId(), type: "image", src: "/images/commercial.jpg", alt: "Architectural glass and metalwork" },
+      products: createProducts([
+        ["Skylight", "Custom overhead glazing that introduces daylight while accounting for drainage, sealing, and structural support.", "/images/hero-main.jpg"],
+        ["Glass Railings", "Clear tempered-glass railing systems for balconies, stairs, decks, and modern interior spaces.", "/images/shower.jpg"],
+        ["Sunroom", "Bright enclosed living spaces made with coordinated glass and aluminum systems for year-round enjoyment.", "/images/hero-main.jpg"],
+        ["Stainless Steel Works", "Custom stainless-steel railings, frames, supports, and architectural details made for long service life.", "/images/showroom.jpg"],
+        ["ACP Cladding & Others", "Aluminum composite panel cladding and tailored architectural finishing for clean, durable facades.", "/images/commercial.jpg"],
+      ]),
     },
   ],
   projects: [
@@ -372,6 +406,8 @@ const defaultSiteData: SiteData = {
 
 export default function App() {
   const [site, setSite] = useState<SiteData>(() => loadSiteData());
+  const [selectedProduct, setSelectedProduct] = useState<{ group: ServiceCard; product: ServiceProduct } | null>(null);
+  const [selectedProductImage, setSelectedProductImage] = useState(0);
   const [adminOpen, setAdminOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [passkey, setPasskey] = useState("");
@@ -386,7 +422,7 @@ export default function App() {
     getSiteContent()
       .then(({ data }) => {
         if (cancelled || !data) return;
-        setSite((current) => deepMerge(current, data));
+        setSite((current) => migrateSiteData(data, current));
       })
       .catch((err) => console.error("Failed to load site content:", err))
       .finally(() => {
@@ -462,6 +498,11 @@ export default function App() {
 
   const resetSite = () => {
     setSite(defaultSiteData);
+  };
+
+  const openProduct = (group: ServiceCard, product: ServiceProduct) => {
+    setSelectedProduct({ group, product });
+    setSelectedProductImage(0);
   };
 
   return (
@@ -661,14 +702,23 @@ export default function App() {
                     <p className="mt-1.5 text-[12.5px] leading-relaxed text-slate-600">{card.desc}</p>
                   </div>
                 </div>
-                <ul className="mt-3 space-y-1.5">
-                  {card.points.map((point, index) => (
-                    <li key={`${card.id}-point-${index}`} className="flex items-center gap-2 text-[12px] text-slate-700">
-                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: site.theme.primary }} />
-                      {point}
-                    </li>
+                <div className="mt-4 space-y-1.5">
+                  {card.products.map((product) => (
+                    <Button
+                      key={product.id}
+                      type="button"
+                      variant="ghost"
+                      onClick={() => openProduct(card, product)}
+                      className="group/product h-auto w-full justify-between rounded-lg px-2 py-2 text-left text-[12px] font-medium text-slate-700 hover:bg-slate-50 hover:text-[var(--brand-primary)]"
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: site.theme.primary }} />
+                        <span className="whitespace-normal">{product.name}</span>
+                      </span>
+                      <Icon name="check" size={11} className="ml-2 shrink-0 -rotate-90 opacity-50 transition group-hover/product:translate-x-0.5 group-hover/product:opacity-100" />
+                    </Button>
                   ))}
-                </ul>
+                </div>
               </div>
               <div className="mt-auto px-5 pb-5">
                 <div className="overflow-hidden rounded-xl">
@@ -679,6 +729,56 @@ export default function App() {
           ))}
         </div>
       </section>
+
+      <Dialog open={Boolean(selectedProduct)} onOpenChange={(open) => !open && setSelectedProduct(null)}>
+        {selectedProduct && (
+          <DialogContent className="max-h-[92vh] max-w-5xl overflow-y-auto border-0 bg-white p-0 shadow-2xl sm:rounded-2xl">
+            <div className="grid min-h-[460px] lg:grid-cols-[1.25fr_0.75fr]">
+              <div className="bg-slate-100 p-3 sm:p-5">
+                <div className="aspect-[4/3] overflow-hidden rounded-xl bg-white">
+                  {selectedProduct.product.media[selectedProductImage] ? (
+                    <MediaDisplay
+                      media={selectedProduct.product.media[selectedProductImage]}
+                      className="h-full w-full object-cover"
+                      autoPlay
+                    />
+                  ) : (
+                    <div className="grid h-full place-items-center text-sm text-slate-400">Images coming soon</div>
+                  )}
+                </div>
+                {selectedProduct.product.media.length > 1 && (
+                  <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                    {selectedProduct.product.media.map((media, index) => (
+                      <Button
+                        key={media.id}
+                        type="button"
+                        variant="ghost"
+                        aria-label={`View image ${index + 1}`}
+                        onClick={() => setSelectedProductImage(index)}
+                        className={`h-16 w-20 shrink-0 overflow-hidden rounded-lg border-2 p-0 ${selectedProductImage === index ? "border-[var(--brand-primary)]" : "border-transparent opacity-70"}`}
+                      >
+                        <MediaDisplay media={media} className="h-full w-full object-cover" autoPlay />
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col justify-center p-6 sm:p-9">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--brand-primary)]">{selectedProduct.group.title}</div>
+                <DialogTitle className="mt-2 pr-8 text-2xl font-bold text-slate-900 sm:text-3xl" style={{ fontFamily: site.theme.headingFont }}>
+                  {selectedProduct.product.name}
+                </DialogTitle>
+                <DialogDescription className="mt-4 text-[14px] leading-7 text-slate-600">
+                  {selectedProduct.product.description}
+                </DialogDescription>
+                <Button asChild className="mt-7 w-fit hover:opacity-90" style={{ backgroundColor: site.theme.primary, color: site.theme.surface }}>
+                  <a href="#quote" onClick={() => setSelectedProduct(null)}>Request a Quote</a>
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        )}
+      </Dialog>
 
       <section id="projects" className="mx-auto max-w-[1400px] px-6 py-4 md:px-10">
         <h2 className="text-[22px] font-bold text-slate-900" style={{ fontFamily: site.theme.headingFont }}>
@@ -1506,38 +1606,20 @@ export default function App() {
                       </div>
                     </AdminSection>
 
-                    <AdminSection title="Services Section" description="Edit service cards, bullet points, and the image or video shown on each card.">
+                    <AdminSection title="Services Section" description="Manage product groups, detailed product information, and each product's image gallery.">
                       <div className="space-y-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <MultiFileUploader
-                            label="Upload Multiple Images"
-                            onFiles={(files) =>
-                              setSite((prev) => ({
-                                ...prev,
-                                services: [
-                                  ...prev.services,
-                                  ...files.map((f) => ({
-                                    id: createId(),
-                                    title: f.alt.replace(/\.[^/.]+$/, ""),
-                                    desc: "Add service details here.",
-                                    points: ["Feature one", "Feature two"],
-                                    icon: "glass" as IconName,
-                                    media: { id: createId(), ...f },
-                                  })),
-                                ],
-                              }))
-                            }
-                          />
-                        </div>
                         {site.services.map((service) => (
                           <details key={service.id} className="group rounded-2xl border border-slate-200 p-4">
                             <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-                              <span className="text-sm font-bold text-slate-900">{service.title || "Untitled Service"}</span>
+                              <span>
+                                <span className="block text-sm font-bold text-slate-900">{service.title || "Untitled Product Group"}</span>
+                                <span className="mt-0.5 block text-[11px] text-slate-500">{service.products.length} products</span>
+                              </span>
                               <span className="text-[11px] font-semibold text-slate-400 transition group-open:rotate-90">▶</span>
                             </summary>
                             <div className="mt-4 grid gap-4 md:grid-cols-2">
                               <Field
-                                label="Service Title"
+                                label="Group Title"
                                 value={service.title}
                                 onChange={(value) =>
                                   setSite((prev) => ({
@@ -1560,7 +1642,7 @@ export default function App() {
                             </div>
                             <div className="mt-4">
                               <TextAreaField
-                                label="Service Description"
+                                label="Group Summary"
                                 value={service.desc}
                                 onChange={(value) =>
                                   setSite((prev) => ({
@@ -1571,21 +1653,8 @@ export default function App() {
                               />
                             </div>
                             <div className="mt-4">
-                              <ArrayStringEditor
-                                label="Bullet Points"
-                                items={service.points}
-                                addLabel="Add Bullet"
-                                onChange={(points) =>
-                                  setSite((prev) => ({
-                                    ...prev,
-                                    services: prev.services.map((item) => (item.id === service.id ? { ...item, points } : item)),
-                                  }))
-                                }
-                              />
-                            </div>
-                            <div className="mt-4">
                               <MediaEditor
-                                title="Service Media"
+                                title="Group Cover Image"
                                 media={service.media}
                                 onChange={(nextMedia) =>
                                   setSite((prev) => ({
@@ -1595,12 +1664,130 @@ export default function App() {
                                 }
                               />
                             </div>
+                            <div className="mt-6 border-t border-slate-200 pt-5">
+                              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-sm font-bold text-slate-900">Products in this group</p>
+                                  <p className="text-[11px] text-slate-500">Each product opens its own visitor popup.</p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    setSite((prev) => ({
+                                      ...prev,
+                                      services: prev.services.map((item) =>
+                                        item.id === service.id
+                                          ? {
+                                              ...item,
+                                              products: [
+                                                ...item.products,
+                                                { id: createId(), name: "New Product", description: "Add a complete product explanation here.", media: [] },
+                                              ],
+                                            }
+                                          : item,
+                                      ),
+                                    }))
+                                  }
+                                >
+                                  Add Product
+                                </Button>
+                              </div>
+                              <div className="space-y-3">
+                                {service.products.map((product) => (
+                                  <details key={product.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                                      <span className="text-[13px] font-semibold text-slate-800">{product.name || "Untitled Product"}</span>
+                                      <span className="text-[11px] text-slate-500">{product.media.length} media</span>
+                                    </summary>
+                                    <div className="mt-4 space-y-4">
+                                      <Field
+                                        label="Product Name"
+                                        value={product.name}
+                                        onChange={(value) =>
+                                          setSite((prev) => updateProduct(prev, service.id, product.id, (current) => ({ ...current, name: value })))
+                                        }
+                                      />
+                                      <TextAreaField
+                                        label="Full Explanation"
+                                        value={product.description}
+                                        onChange={(value) =>
+                                          setSite((prev) => updateProduct(prev, service.id, product.id, (current) => ({ ...current, description: value })))
+                                        }
+                                      />
+                                      <div>
+                                        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                                          <p className="text-[12px] font-semibold text-slate-700">Product Images & Videos</p>
+                                          <MultiFileUploader
+                                            label="Upload Media"
+                                            accept="image/*,video/*"
+                                            onFiles={(files) =>
+                                              setSite((prev) =>
+                                                updateProduct(prev, service.id, product.id, (current) => ({
+                                                  ...current,
+                                                  media: [...current.media, ...files.map((file) => ({ id: createId(), ...file }))],
+                                                })),
+                                              )
+                                            }
+                                          />
+                                        </div>
+                                        {product.media.length === 0 ? (
+                                          <div className="rounded-xl border border-dashed border-slate-300 p-5 text-center text-xs text-slate-500">No product media yet.</div>
+                                        ) : (
+                                          <div className="grid gap-3 md:grid-cols-2">
+                                            {product.media.map((media) => (
+                                              <MediaEditor
+                                                key={media.id}
+                                                title="Gallery Item"
+                                                media={media}
+                                                onChange={(nextMedia) =>
+                                                  setSite((prev) =>
+                                                    updateProduct(prev, service.id, product.id, (current) => ({
+                                                      ...current,
+                                                      media: current.media.map((item) => (item.id === media.id ? nextMedia : item)),
+                                                    })),
+                                                  )
+                                                }
+                                                onDelete={() =>
+                                                  setSite((prev) =>
+                                                    updateProduct(prev, service.id, product.id, (current) => ({
+                                                      ...current,
+                                                      media: current.media.filter((item) => item.id !== media.id),
+                                                    })),
+                                                  )
+                                                }
+                                              />
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() =>
+                                          setSite((prev) => ({
+                                            ...prev,
+                                            services: prev.services.map((item) =>
+                                              item.id === service.id ? { ...item, products: item.products.filter((entry) => entry.id !== product.id) } : item,
+                                            ),
+                                          }))
+                                        }
+                                      >
+                                        Delete Product
+                                      </Button>
+                                    </div>
+                                  </details>
+                                ))}
+                              </div>
+                            </div>
                             <button
                               type="button"
                               onClick={() => setSite((prev) => ({ ...prev, services: prev.services.filter((item) => item.id !== service.id) }))}
                               className="mt-4 rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
                             >
-                              Delete Service Card
+                              Delete Product Group
                             </button>
                           </details>
                         ))}
@@ -1613,18 +1800,19 @@ export default function App() {
                                 ...prev.services,
                                 {
                                   id: createId(),
-                                  title: "New Service",
-                                  desc: "Add service details here.",
-                                  points: ["Feature one", "Feature two"],
+                                  title: "New Product Group",
+                                  desc: "Add a short group summary here.",
+                                  points: [],
                                   icon: "glass",
-                                  media: { id: createId(), type: "image", src: "/images/window.jpg", alt: "New service" },
+                                  media: { id: createId(), type: "image", src: "/images/window.jpg", alt: "New product group" },
+                                  products: [],
                                 },
                               ],
                             }))
                           }
                           className="rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                         >
-                          Add Service Card
+                          Add Product Group
                         </button>
                       </div>
                     </AdminSection>
@@ -2353,10 +2541,63 @@ function loadSiteData(): SiteData {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultSiteData;
     const parsed = JSON.parse(raw);
-    return deepMerge(defaultSiteData, parsed);
+    return migrateSiteData(parsed, defaultSiteData);
   } catch {
     return defaultSiteData;
   }
+}
+
+function migrateSiteData(saved: unknown, fallback: SiteData): SiteData {
+  const merged = deepMerge(fallback, saved);
+  if (!isObject(saved) || saved.serviceCatalogVersion === 2) {
+    return {
+      ...merged,
+      serviceCatalogVersion: 2,
+      services: merged.services.map(normalizeService),
+    };
+  }
+
+  return {
+    ...merged,
+    serviceCatalogVersion: 2,
+    services: defaultSiteData.services.map((group) => ({ ...group, products: group.products.map((product) => ({ ...product, media: [...product.media] })) })),
+  };
+}
+
+function normalizeService(value: ServiceCard): ServiceCard {
+  const products = Array.isArray(value.products)
+    ? value.products.filter(isObject).map((product) => ({
+        id: typeof product.id === "string" ? product.id : createId(),
+        name: typeof product.name === "string" ? product.name : "Untitled Product",
+        description: typeof product.description === "string" ? product.description : "",
+        media: Array.isArray(product.media) ? product.media.filter(isMediaItem) : [],
+      }))
+    : [];
+  return { ...value, products };
+}
+
+function isMediaItem(value: unknown): value is MediaItem {
+  return isObject(value) && typeof value.id === "string" && typeof value.src === "string" && typeof value.alt === "string" && (value.type === "image" || value.type === "video");
+}
+
+function updateProduct(site: SiteData, serviceId: string, productId: string, update: (product: ServiceProduct) => ServiceProduct): SiteData {
+  return {
+    ...site,
+    services: site.services.map((service) =>
+      service.id === serviceId
+        ? { ...service, products: service.products.map((product) => (product.id === productId ? update(product) : product)) }
+        : service,
+    ),
+  };
+}
+
+function createProducts(entries: Array<[string, string, string]>): ServiceProduct[] {
+  return entries.map(([name, description, src]) => ({
+    id: createId(),
+    name,
+    description,
+    media: [{ id: createId(), type: "image", src, alt: name }],
+  }));
 }
 
 function deepMerge<T>(base: T, override: unknown): T {

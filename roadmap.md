@@ -1,5 +1,8 @@
 # Roadmap
 
-- [x] Remove Cloudflare code (wrangler.jsonc, @cloudflare/vite-plugin, config comments)
-- [x] Fix font @import CSS error (moved to link tags in __root.tsx)
-- [ ] Fix ALL typecheck errors in /tmp/observability/build-errors.log (incl. pre-existing)
+- [x] Remove Cloudflare code and restore clean preview builds
+- [x] Build three interactive What We Do product groups
+- [x] Add product detail popup with multi-image gallery
+- [x] Add complete admin product and image editing
+- [x] Preserve legacy saved content and cloud persistence
+- [x] Verify desktop, mobile, saving, and clean build
