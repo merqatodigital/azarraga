@@ -12,7 +12,7 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import {
   LeadRow,
   LeadActivity,
-  scoreLead,
+  scoreLead as computeLeadScore,
   LeadSignalKey,
   CustomerTypeKey,
 } from "@/lib/lead-knowledge";
@@ -101,7 +101,7 @@ export const createLead = createServerFn({ method: "POST" })
     // Auto-score on creation
     const signals = (lead.signals ?? []) as LeadSignalKey[];
     const customerType = lead.customer_type as CustomerTypeKey;
-    const newScore = scoreLead(
+    const newScore = computeLeadScore(
       signals,
       customerType,
       lead.project_location ?? "",
@@ -230,7 +230,7 @@ export const scoreLead = createServerFn({ method: "POST" })
 
     const signals = (lead.signals ?? []) as LeadSignalKey[];
     const customerType = (lead.customer_type ?? "general_contractor") as CustomerTypeKey;
-    const newScore = scoreLead(
+    const newScore = computeLeadScore(
       signals,
       customerType,
       lead.project_location ?? "",
