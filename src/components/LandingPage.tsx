@@ -189,7 +189,7 @@ const iconOptions: IconName[] = [
 ];
 
 const defaultSiteData: SiteData = {
-  serviceCatalogVersion: 2,
+  serviceCatalogVersion: 3,
   theme: {
     primary: "#0b3b8f",
     primaryDark: "#082f73",
