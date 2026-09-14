@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { getSiteContent, saveSiteContent, uploadSiteMedia } from "@/lib/site-content.functions";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 // Holds the admin passkey after successful login so MediaEditor/MultiFileUploader
 // can call the upload server fn without prop-threading through every section.
@@ -100,6 +101,7 @@ interface ThemeData {
 }
 
 interface SiteData {
+  serviceCatalogVersion: number;
   theme: ThemeData;
   header: {
     tagline: string;
@@ -178,6 +180,7 @@ const iconOptions: IconName[] = [
 ];
 
 const defaultSiteData: SiteData = {
+  serviceCatalogVersion: 2,
   theme: {
     primary: "#0b3b8f",
     primaryDark: "#082f73",
@@ -403,6 +406,8 @@ const defaultSiteData: SiteData = {
 
 export default function App() {
   const [site, setSite] = useState<SiteData>(() => loadSiteData());
+  const [selectedProduct, setSelectedProduct] = useState<{ group: ServiceCard; product: ServiceProduct } | null>(null);
+  const [selectedProductImage, setSelectedProductImage] = useState(0);
   const [adminOpen, setAdminOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [passkey, setPasskey] = useState("");
@@ -417,7 +422,7 @@ export default function App() {
     getSiteContent()
       .then(({ data }) => {
         if (cancelled || !data) return;
-        setSite((current) => deepMerge(current, data));
+        setSite((current) => migrateSiteData(data, current));
       })
       .catch((err) => console.error("Failed to load site content:", err))
       .finally(() => {
@@ -493,6 +498,11 @@ export default function App() {
 
   const resetSite = () => {
     setSite(defaultSiteData);
+  };
+
+  const openProduct = (group: ServiceCard, product: ServiceProduct) => {
+    setSelectedProduct({ group, product });
+    setSelectedProductImage(0);
   };
 
   return (
@@ -692,14 +702,23 @@ export default function App() {
                     <p className="mt-1.5 text-[12.5px] leading-relaxed text-slate-600">{card.desc}</p>
                   </div>
                 </div>
-                <ul className="mt-3 space-y-1.5">
-                  {card.points.map((point, index) => (
-                    <li key={`${card.id}-point-${index}`} className="flex items-center gap-2 text-[12px] text-slate-700">
-                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: site.theme.primary }} />
-                      {point}
-                    </li>
+                <div className="mt-4 space-y-1.5">
+                  {card.products.map((product) => (
+                    <Button
+                      key={product.id}
+                      type="button"
+                      variant="ghost"
+                      onClick={() => openProduct(card, product)}
+                      className="group/product h-auto w-full justify-between rounded-lg px-2 py-2 text-left text-[12px] font-medium text-slate-700 hover:bg-slate-50 hover:text-[var(--brand-primary)]"
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: site.theme.primary }} />
+                        <span className="whitespace-normal">{product.name}</span>
+                      </span>
+                      <Icon name="check" size={11} className="ml-2 shrink-0 -rotate-90 opacity-50 transition group-hover/product:translate-x-0.5 group-hover/product:opacity-100" />
+                    </Button>
                   ))}
-                </ul>
+                </div>
               </div>
               <div className="mt-auto px-5 pb-5">
                 <div className="overflow-hidden rounded-xl">
@@ -710,6 +729,56 @@ export default function App() {
           ))}
         </div>
       </section>
+
+      <Dialog open={Boolean(selectedProduct)} onOpenChange={(open) => !open && setSelectedProduct(null)}>
+        {selectedProduct && (
+          <DialogContent className="max-h-[92vh] max-w-5xl overflow-y-auto border-0 bg-white p-0 shadow-2xl sm:rounded-2xl">
+            <div className="grid min-h-[460px] lg:grid-cols-[1.25fr_0.75fr]">
+              <div className="bg-slate-100 p-3 sm:p-5">
+                <div className="aspect-[4/3] overflow-hidden rounded-xl bg-white">
+                  {selectedProduct.product.media[selectedProductImage] ? (
+                    <MediaDisplay
+                      media={selectedProduct.product.media[selectedProductImage]}
+                      className="h-full w-full object-cover"
+                      autoPlay
+                    />
+                  ) : (
+                    <div className="grid h-full place-items-center text-sm text-slate-400">Images coming soon</div>
+                  )}
+                </div>
+                {selectedProduct.product.media.length > 1 && (
+                  <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+                    {selectedProduct.product.media.map((media, index) => (
+                      <Button
+                        key={media.id}
+                        type="button"
+                        variant="ghost"
+                        aria-label={`View image ${index + 1}`}
+                        onClick={() => setSelectedProductImage(index)}
+                        className={`h-16 w-20 shrink-0 overflow-hidden rounded-lg border-2 p-0 ${selectedProductImage === index ? "border-[var(--brand-primary)]" : "border-transparent opacity-70"}`}
+                      >
+                        <MediaDisplay media={media} className="h-full w-full object-cover" autoPlay />
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col justify-center p-6 sm:p-9">
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--brand-primary)]">{selectedProduct.group.title}</div>
+                <DialogTitle className="mt-2 pr-8 text-2xl font-bold text-slate-900 sm:text-3xl" style={{ fontFamily: site.theme.headingFont }}>
+                  {selectedProduct.product.name}
+                </DialogTitle>
+                <DialogDescription className="mt-4 text-[14px] leading-7 text-slate-600">
+                  {selectedProduct.product.description}
+                </DialogDescription>
+                <Button asChild className="mt-7 w-fit bg-[var(--brand-primary)] text-white hover:opacity-90">
+                  <a href="#quote" onClick={() => setSelectedProduct(null)}>Request a Quote</a>
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        )}
+      </Dialog>
 
       <section id="projects" className="mx-auto max-w-[1400px] px-6 py-4 md:px-10">
         <h2 className="text-[22px] font-bold text-slate-900" style={{ fontFamily: site.theme.headingFont }}>
