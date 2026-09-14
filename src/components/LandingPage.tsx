@@ -1602,7 +1602,7 @@ export default function App() {
                             >
                               Delete Service Card
                             </button>
-                          </div>
+                          </details>
                         ))}
                         <button
                           type="button"
