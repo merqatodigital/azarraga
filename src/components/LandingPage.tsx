@@ -311,8 +311,18 @@ const defaultSiteData: SiteData = {
         ["Bi-Fold Doors", "Connected door panels that fold and stack to open rooms to patios, gardens, or commercial spaces.", "/images/door.jpg"],
         ["Sliding Doors", "Smooth-gliding glass and aluminum doors that save floor space and bring in expansive natural light.", "/images/hero-main.jpg"],
         ["Casement/Swing Doors", "Hinged entry doors built to suit residential and commercial openings with dependable hardware.", "/images/door.jpg"],
-        ["Roll-Up Doors", "Compact vertical-opening doors for storefronts, service areas, garages, and secure commercial access.", "/images/commercial.jpg"],
-        ["Hanging Doors", "Top-hung door systems with clean floor lines and smooth movement for contemporary interiors.", "/images/door.jpg"],
+        ["Roll-Up Doors", "Compact vertical-opening doors for storefronts, service areas, garages, and secure commercial access.", "/images/commercial.jpg", [
+          ["Polycarbonate Roll Up", "Translucent polycarbonate slats that keep storefronts secure while letting daylight through.", "/images/commercial.jpg"],
+          ["Security Grill Roll Up", "Open grill shutter that secures the opening while keeping the display visible and ventilated.", "/images/commercial.jpg"],
+          ["Stainless Steel Roll Up", "Corrosion-resistant stainless shutter suited to coastal air and heavy daily use.", "/images/showroom.jpg"],
+          ["Galvalume Roll Up", "Durable galvalume shutter offering solid protection at a practical cost.", "/images/commercial.jpg"],
+        ]],
+        ["Hanging Doors", "Top-hung door systems with clean floor lines and smooth movement for contemporary interiors.", "/images/door.jpg", [
+          ["Barn Door", "Exposed top-hung barn door with a warm framed panel and smooth rolling hardware.", "/images/door.jpg"],
+          ["Ghost Series", "Frosted glass hanging door with concealed tracking for a soft, minimal look.", "/images/shower.jpg"],
+          ["Frameless Hanging Door", "Fully frameless glass hanging door for the cleanest modern interior transition.", "/images/shower.jpg"],
+        ]],
+
       ]),
     },
     {
