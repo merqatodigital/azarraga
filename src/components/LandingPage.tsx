@@ -1000,6 +1000,18 @@ export default function App() {
                     </div>
                   </div>
 
+                  <div className="sticky top-[73px] z-10 flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50/95 px-4 py-2.5 backdrop-blur md:px-6">
+                    {["Brand Kit", "Header", "Hero", "Trust Bar", "Company Section", "Services Section", "Projects Section", "Process Section", "Promo, Quote & Contact", "Footer"].map((sectionTitle) => (
+                      <a
+                        key={sectionTitle}
+                        href={`#admin-${sectionTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                        className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:border-blue-300 hover:text-blue-600"
+                      >
+                        {sectionTitle.replace(" Section", "")}
+                      </a>
+                    ))}
+                  </div>
+
                   <div className="space-y-4 p-4 md:p-6">
                     <AdminSection title="Brand Kit" description="Control the landing page color palette, fonts, and logo download.">
                       <div className="grid gap-4 md:grid-cols-2">
@@ -1518,8 +1530,12 @@ export default function App() {
                           />
                         </div>
                         {site.services.map((service) => (
-                          <div key={service.id} className="rounded-2xl border border-slate-200 p-4">
-                            <div className="grid gap-4 md:grid-cols-2">
+                          <details key={service.id} className="group rounded-2xl border border-slate-200 p-4">
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                              <span className="text-sm font-bold text-slate-900">{service.title || "Untitled Service"}</span>
+                              <span className="text-[11px] font-semibold text-slate-400 transition group-open:rotate-90">▶</span>
+                            </summary>
+                            <div className="mt-4 grid gap-4 md:grid-cols-2">
                               <Field
                                 label="Service Title"
                                 value={service.title}
@@ -1586,7 +1602,7 @@ export default function App() {
                             >
                               Delete Service Card
                             </button>
-                          </div>
+                          </details>
                         ))}
                         <button
                           type="button"
@@ -1953,8 +1969,9 @@ function AdminInput({ placeholder, type = "text" }: { placeholder: string; type?
 }
 
 function AdminSection({ title, description, children }: { title: string; description: string; children: ReactNode }) {
+  const anchorId = `admin-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
-    <details open className="rounded-3xl border border-slate-200 bg-white p-4 md:p-5">
+    <details open id={anchorId} className="scroll-mt-24 rounded-3xl border border-slate-200 bg-white p-4 md:p-5">
       <summary className="cursor-pointer list-none">
         <div className="flex flex-col gap-1 pr-8">
           <h4 className="text-base font-bold text-slate-900">{title}</h4>
@@ -2063,7 +2080,7 @@ function ArrayStringEditor({
       </div>
       <div className="space-y-2">
         {items.map((item, index) => (
-          <div key={`${item}-${index}`} className="grid gap-2 rounded-2xl border border-slate-200 p-3 md:grid-cols-[1fr_auto]">
+          <div key={index} className="grid gap-2 rounded-2xl border border-slate-200 p-3 md:grid-cols-[1fr_auto]">
             <input
               value={item}
               onChange={(event) => onChange(items.map((current, currentIndex) => (currentIndex === index ? event.target.value : current)))}
