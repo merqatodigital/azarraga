@@ -1,0 +1,2 @@
+CREATE POLICY "client_docs_read_auth" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'client-docs');
+CREATE POLICY "client_docs_service_role" ON storage.objects FOR ALL TO service_role USING (bucket_id = 'client-docs') WITH CHECK (bucket_id = 'client-docs');

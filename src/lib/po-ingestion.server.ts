@@ -75,7 +75,7 @@ export const findLeadByPONumber = createServerFn({ method: "GET" })
     const { data: lead } = await supabaseAdmin
       .from("leads")
       .select("*")
-      .eq("lead_reference", docs.lead_reference)
+      .eq("lead_reference", docs.lead_reference ?? "")
       .maybeSingle();
 
     return lead as any;
@@ -188,7 +188,7 @@ export const upsertProject = createServerFn({ method: "POST" })
       if (data.po_value_cents !== undefined)
         updates.po_value_cents = toCents(data.po_value_cents / 100);
       if (data.notes) {
-        const combined = `${existing.description || existing.notes || ""}${data.notes ? " " + data.notes : ""}`.trim();
+        const combined = `${existing.description || ""}${data.notes ? " " + data.notes : ""}`.trim();
         if (combined) updates.notes = combined;
       }
       if (data.provenance) {
@@ -197,7 +197,7 @@ export const upsertProject = createServerFn({ method: "POST" })
       }
       updates.updated_at = new Date().toISOString();
       if (Object.keys(updates).length > 1) {
-        await supabaseAdmin.from("projects").update(updates).eq("id", existing.id);
+        await supabaseAdmin.from("projects").update(updates as never).eq("id", existing.id);
       }
       return (await getProject({ data: { id: existing.id } })) as ProjectRow;
     }
@@ -380,7 +380,7 @@ export const ingestPO = createServerFn({ method: "POST" })
           project_name: projectName,
           class_name: item.product_type || undefined,
         })
-        .catch(() => {});
+        .then(() => undefined, () => undefined);
     }
 
     // 5. Record PO line items for invoice inheritance
@@ -402,7 +402,7 @@ export const ingestPO = createServerFn({ method: "POST" })
           remarks: `${data.source || "PO ingestion"}`,
           sort_order: i + 1,
         },
-      }).catch(() => {});
+      }).then(() => undefined, () => undefined);
     }
 
     // 6. Return full chain

@@ -88,7 +88,7 @@ export const updateCustomer = createServerFn({ method: "POST" })
     updates.updated_at = new Date().toISOString();
 
     const { data: customer, error } = await supabaseAdmin
-      .from("customers").update(updates).eq("id", data.id).select().single();
+      .from("customers").update(updates as never).eq("id", data.id).select().single();
     if (error) throw new Error(error.message);
     return customer as CustomerRow;
   });
@@ -116,7 +116,7 @@ export const listProjects = createServerFn({ method: "GET" }).handler(async () =
     `)
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
-  return data as (ProjectRow & {
+  return data as unknown as (ProjectRow & {
     customer?: CustomerRow;
     client_po?: ClientPORow[];
     costs?: ProjectCostRow[];
@@ -144,7 +144,7 @@ export const getProject = createServerFn({ method: "GET" })
       .eq("id", data.id)
       .single();
     if (error) throw new Error(error.message);
-    return project as ProjectRow & {
+    return project as unknown as ProjectRow & {
       customer?: CustomerRow;
       client_po?: ClientPORow[];
       invoice_items?: (InvoiceLineItemRow & {
@@ -211,7 +211,7 @@ export const updateProject = createServerFn({ method: "POST" })
     updates.updated_at = new Date().toISOString();
 
     const { data: project, error } = await supabaseAdmin
-      .from("projects").update(updates).eq("id", data.id).select().single();
+      .from("projects").update(updates as never).eq("id", data.id).select().single();
     if (error) throw new Error(error.message);
     return project as ProjectRow;
   });
@@ -229,7 +229,7 @@ export const deleteProject = createServerFn({ method: "POST" })
 // ──────────────────────────────────────────────────────────────────────────────
 
 export const listClientPOs = createServerFn({ method: "GET" })
-  .inputValidator((input) => z.object({ project_id: z.string().uuid() }).optional())
+  .inputValidator((input) => z.object({ project_id: z.string().uuid() }).optional().parse(input))
   .handler(async ({ data }) => {
     const query = supabaseAdmin
       .from("client_po")
@@ -262,7 +262,7 @@ export const getClientPO = createServerFn({ method: "GET" })
       .eq("id", data.id)
       .single();
     if (error) throw new Error(error.message);
-    return po as ClientPORow & {
+    return po as unknown as ClientPORow & {
       project?: ProjectRow & { customer?: CustomerRow };
       items?: POLineItemRow[];
     };
@@ -320,7 +320,7 @@ export const updateClientPO = createServerFn({ method: "POST" })
     updates.updated_at = new Date().toISOString();
 
     const { data: po, error } = await supabaseAdmin
-      .from("client_po").update(updates).eq("id", data.id).select().single();
+      .from("client_po").update(updates as never).eq("id", data.id).select().single();
     if (error) throw new Error(error.message);
     return po as ClientPORow;
   });
@@ -415,7 +415,7 @@ export const updatePOLineItem = createServerFn({ method: "POST" })
     if (data.sort_order !== undefined) updates.sort_order = data.sort_order;
 
     const { data: item, error } = await supabaseAdmin
-      .from("po_line_items").update(updates).eq("id", data.id).select().single();
+      .from("po_line_items").update(updates as never).eq("id", data.id).select().single();
     if (error) throw new Error(error.message);
     return item as POLineItemRow;
   });
@@ -438,7 +438,7 @@ export const listInvoices = createServerFn({ method: "GET" })
       customer_id: z.string().uuid().optional(),
       project_id: z.string().uuid().optional(),
       status: z.string().optional(),
-    }).optional()
+    }).optional().parse(input)
   )
   .handler(async ({ data }) => {
     const query = supabaseAdmin
@@ -448,12 +448,10 @@ export const listInvoices = createServerFn({ method: "GET" })
         customer:customers(id, name),
         project:projects(id, name, customer:customers(id, name)),
         client_po:client_po(id, po_number),
-        line_items(
-          invoice_line_items(id, sort_order, description, product_type, glass_type,
-            glass_thickness_mm, aluminum_system, quantity, unit, unit_price_cents,
-            discount_cents, tax_cents, line_total_cents, remarks),
-          payments(id, payment_number, amount_cents, payment_date, payment_method, reference, confirmed)
-        )
+        invoice_line_items(id, sort_order, description, product_type, glass_type,
+          glass_thickness_mm, aluminum_system, quantity, unit, unit_price_cents,
+          discount_cents, tax_cents, line_total_cents, remarks),
+        payments(id, payment_number, amount_cents, payment_date, payment_method, reference, confirmed)
       `)
       .order("issue_date", { ascending: false });
 
@@ -467,7 +465,8 @@ export const listInvoices = createServerFn({ method: "GET" })
       customer?: CustomerRow;
       project?: (ProjectRow & { customer?: CustomerRow }) | null;
       client_po?: ClientPORow | null;
-      line_items?: (InvoiceLineItemRow & { payments?: PaymentRow[] })[];
+      invoice_line_items?: InvoiceLineItemRow[];
+      payments?: PaymentRow[];
     })[];
   });
 
@@ -481,19 +480,17 @@ export const getInvoice = createServerFn({ method: "GET" })
         customer:customers(id, name, contact_name, phone, email),
         project:projects(id, name, customer:customers(id, name)),
         client_po:client_po(id, po_number, total_cents, invoiced_cents),
-        line_items(
-          invoice_line_items(id, sort_order, description, product_type, glass_type,
-            glass_thickness_mm, aluminum_system, quantity, unit, unit_price_cents,
-            discount_cents, tax_cents, line_total_cents, remarks),
-          payments(id, payment_number, amount_cents, payment_date, payment_method, reference, confirmed)
-        )
+        invoice_line_items(id, sort_order, description, product_type, glass_type,
+          glass_thickness_mm, aluminum_system, quantity, unit, unit_price_cents,
+          discount_cents, tax_cents, line_total_cents, remarks),
+        payments(id, payment_number, amount_cents, payment_date, payment_method, reference, confirmed)
       `)
       .eq("id", data.id)
       .single();
     if (error) throw new Error(error.message);
 
     // Compute balance deterministically from payments
-    const payments = invoice.line_items?.flatMap((li) => li.payments ?? []) ?? [];
+    const payments = invoice.payments ?? [];
     const totalPaid = sumCents(payments.map((p) => p.amount_cents));
 
     return {
@@ -537,7 +534,7 @@ export const createInvoice = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     // Generate invoice number
     const { data: numResult } = await supabaseAdmin
-      .rpc("next_invoice_number", {})
+      .rpc("next_invoice_number")
       .single();
 
     const invoiceNumber = typeof numResult === "string" ? numResult : `AZ-00001`;
@@ -621,7 +618,7 @@ export const updateInvoice = createServerFn({ method: "POST" })
     updates.updated_at = new Date().toISOString();
 
     const { data: invoice, error } = await supabaseAdmin
-      .from("invoices").update(updates).eq("id", data.id).select().single();
+      .from("invoices").update(updates as never).eq("id", data.id).select().single();
     if (error) throw new Error(error.message);
     return invoice as InvoiceRow;
   });
@@ -718,7 +715,7 @@ export const updateInvoiceLineItem = createServerFn({ method: "POST" })
     if (data.sort_order !== undefined) updates.sort_order = data.sort_order;
 
     const { data: item, error } = await supabaseAdmin
-      .from("invoice_line_items").update(updates).eq("id", data.id).select().single();
+      .from("invoice_line_items").update(updates as never).eq("id", data.id).select().single();
     if (error) throw new Error(error.message);
     return item as InvoiceLineItemRow;
   });
@@ -755,7 +752,7 @@ export const createPayment = createServerFn({ method: "POST" })
       .eq("invoice_id", data.invoice_id)
       .maybeSingle();
 
-    const existing = await supabaseAdmin
+    const { data: lastPayment } = await supabaseAdmin
       .from("payments")
       .select("payment_number")
       .eq("invoice_id", data.invoice_id)
@@ -764,8 +761,8 @@ export const createPayment = createServerFn({ method: "POST" })
       .maybeSingle();
 
     let paymentNum = 1;
-    if (existing && existing.payment_number) {
-      const last = parseInt(existing.payment_number.replace(/\D/g, ""), 10);
+    if (lastPayment?.payment_number) {
+      const last = parseInt(lastPayment.payment_number.replace(/\D/g, ""), 10);
       paymentNum = isNaN(last) ? 1 : last + 1;
     }
 
@@ -877,7 +874,7 @@ export const listSupplierPOs = createServerFn({ method: "GET" })
     z.object({
       supplier_id: z.string().uuid().optional(),
       project_id: z.string().uuid().optional(),
-    }).optional()
+    }).optional().parse(input)
   )
   .handler(async ({ data }) => {
     const query = supabaseAdmin
@@ -957,7 +954,7 @@ export const updateSupplierPO = createServerFn({ method: "POST" })
     updates.updated_at = new Date().toISOString();
 
     const { data: po, error } = await supabaseAdmin
-      .from("supplier_po").update(updates).eq("id", data.id).select().single();
+      .from("supplier_po").update(updates as never).eq("id", data.id).select().single();
     if (error) throw new Error(error.message);
     return po as SupplierPORow;
   });
@@ -975,7 +972,7 @@ export const deleteSupplierPO = createServerFn({ method: "POST" })
 // ──────────────────────────────────────────────────────────────────────────────
 
 export const listProjectCosts = createServerFn({ method: "GET" })
-  .inputValidator((input) => z.object({ project_id: z.string().uuid() }).optional())
+  .inputValidator((input) => z.object({ project_id: z.string().uuid() }).optional().parse(input))
   .handler(async ({ data }) => {
     const query = supabaseAdmin
       .from("project_costs")
@@ -1047,7 +1044,7 @@ export const updateProjectCost = createServerFn({ method: "POST" })
     if (data.notes !== undefined) updates.notes = data.notes;
 
     const { data: cost, error } = await supabaseAdmin
-      .from("project_costs").update(updates).eq("id", data.id).select().single();
+      .from("project_costs").update(updates as never).eq("id", data.id).select().single();
     if (error) throw new Error(error.message);
     return cost as ProjectCostRow;
   });

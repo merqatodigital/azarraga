@@ -10,7 +10,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef } from "react";
 import { createLead } from "@/lib/leads.server";
-import { scoreLead } from "@/lib/lead-knowledge";
+import { scoreLead } from "@/lib/leads.server";
 import { uploadClientDoc } from "@/lib/client-docs.server";
 import {
   ArrowRight,

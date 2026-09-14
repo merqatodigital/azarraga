@@ -22,13 +22,18 @@ import {
 // ──────────────────────────────────────────────────────────────────────────────
 
 async function nextLeadRef(): Promise<string> {
-  const { count } = await supabaseAdmin
+  const year = new Date().getFullYear();
+  const { data: latest } = await supabaseAdmin
     .from("leads")
-    .select(count('"id"'), { count: "exact" })
-    .like("lead_reference", "L-%")
+    .select("lead_reference")
+    .like("lead_reference", `L-${year}-%`)
+    .order("lead_reference", { ascending: false })
+    .limit(1)
     .maybeSingle();
-  const n = count ? parseInt(count.lead_reference?.split("-")?.pop() ?? "0", 10) : 0;
-  return `L-${new Date().getFullYear()}-${String(n + 1).padStart(3, "0")}`;
+  const n = latest?.lead_reference
+    ? parseInt(latest.lead_reference.split("-").pop() ?? "0", 10)
+    : 0;
+  return `L-${year}-${String(n + 1).padStart(3, "0")}`;
 }
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -139,7 +144,7 @@ export const listLeads = createServerFn({ method: "GET" })
       stage: z.string().max(50).optional(),
       search: z.string().max(200).optional(),
       sort_by_score: z.boolean().optional(),
-    }).optional()
+    }).optional().parse(input)
   )
   .handler(async ({ data }) => {
     let q = supabaseAdmin.from("leads").select("*").order("created_at", { ascending: false });
@@ -191,7 +196,7 @@ export const updateLead = createServerFn({ method: "POST" })
     set.updated_at = new Date().toISOString();
     const { data: lead, error } = await supabaseAdmin
       .from("leads")
-      .update(set)
+      .update(set as never)
       .eq("id", data.id)
       .select()
       .single();
@@ -290,7 +295,7 @@ export const listLeadActivities = createServerFn({ method: "GET" })
   .inputValidator((input) =>
     z.object({
       lead_id: z.string().uuid(),
-    }).optional()
+    }).optional().parse(input)
   )
   .handler(async ({ data }) => {
     let q = supabaseAdmin

@@ -1,7 +1,7 @@
 interface EmptyStateProps {
   title: string;
   description?: string;
-  icon?: "inbox" | "file" | "users" | "alert-circle";
+  icon?: string;
 }
 
 const icons = {
@@ -34,9 +34,10 @@ const icons = {
 };
 
 export function EmptyState({ title, description, icon = "inbox" }: EmptyStateProps) {
+  const resolvedIcon = icon in icons ? (icon as keyof typeof icons) : "inbox";
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
-      {icons[icon]}
+      {icons[resolvedIcon]}
       <h3 className="mt-4 text-base font-semibold text-gray-900">{title}</h3>
       {description && <p className="mt-1 text-sm text-gray-500 max-w-sm">{description}</p>}
     </div>

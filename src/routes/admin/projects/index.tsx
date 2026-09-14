@@ -86,6 +86,7 @@ function ProjectsPage() {
     try {
       const poValueCents = Math.round(form.po_value_cents * 100);
       const p = await createProject({
+        data: {
         name: form.name,
         customer_id: form.customer_id,
         description: form.description,
@@ -93,6 +94,7 @@ function ProjectsPage() {
         stage: form.stage,
         po_value_cents: poValueCents,
         notes: form.notes,
+        },
       });
       setProjects((prev) => [p as ProjectRow, ...prev]);
       setForm({
@@ -114,7 +116,7 @@ function ProjectsPage() {
 
   const handleStageUpdate = async (projectId: string, stage: string) => {
     try {
-      const updated = await updateProject({ id: projectId, stage });
+      const updated = await updateProject({ data: { id: projectId, stage: stage as never } });
       setProjects((prev) =>
         prev.map((p) => (p.id === projectId ? (updated as ProjectRow) : p))
       );
@@ -371,7 +373,7 @@ function ProjectsPage() {
                     <div className="flex flex-wrap gap-1">
                       {[
                         p.stage,
-                        p.client_po?.length > 0 ? "po-received" : null,
+                        (p as any).client_po?.length > 0 ? "po-received" : null,
                       ]
                         .filter(Boolean)
                         .map((s) => (

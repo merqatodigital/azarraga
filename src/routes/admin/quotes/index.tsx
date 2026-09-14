@@ -65,7 +65,7 @@ function QuotesPage() {
 
   useEffect(() => {
     loadQuotes();
-    listCustomers({ data: {} }).then(setCustomers).catch(console.error);
+    listCustomers(undefined as never).then(setCustomers).catch(console.error);
   }, []);
 
   const loadQuotes = async () => {
@@ -180,7 +180,7 @@ function QuotesPage() {
     setSubmitting(true);
     try {
       await submitQuoteForApproval({ data: { id: selectedQuote.id, prepared_by: "owner" } });
-      setSelectedQuote((prev) => ({ ...prev, status: "ready-for-approval" }));
+      setSelectedQuote((prev: any) => ({ ...prev, status: "ready-for-approval" }));
       loadQuotes();
     } catch (e) {
       console.error("Failed to submit for approval:", e);
@@ -194,7 +194,7 @@ function QuotesPage() {
     setSubmitting(true);
     try {
       await approveQuote({ data: { id: selectedQuote.id, approved_by: "owner" } });
-      setSelectedQuote((prev) => ({ ...prev, status: "approved" }));
+      setSelectedQuote((prev: any) => ({ ...prev, status: "approved" }));
       loadQuotes();
     } catch (e) {
       console.error("Failed to approve:", e);
@@ -210,7 +210,7 @@ function QuotesPage() {
     setSubmitting(true);
     try {
       await rejectQuote({ data: { id: selectedQuote.id, reason } });
-      setSelectedQuote((prev) => ({ ...prev, status: "draft" }));
+      setSelectedQuote((prev: any) => ({ ...prev, status: "draft" }));
       loadQuotes();
     } catch (e) {
       console.error("Failed to reject:", e);
@@ -235,7 +235,7 @@ function QuotesPage() {
     );
   };
 
-  const getSystemName = (key: string) => PRODUCT_SYSTEMS[key]?.name ?? key;
+  const getSystemName = (key: string) => (PRODUCT_SYSTEMS as Record<string, { name: string }>)[key]?.name ?? key;
 
   return (
     <AdminLayout>
@@ -247,7 +247,7 @@ function QuotesPage() {
           />
           <button
             className="rounded-lg bg-ring text-ring-foreground px-4 py-2 text-sm font-medium hover:bg-ring/90"
-            onClick={() => router.navigate({ to: "/admin/quotes/new" })}
+            onClick={() => router.navigate({ to: "/admin/quotes/new" as never })}
           >
             <Plus size={16} className="mr-1" />
             New Quote
@@ -629,7 +629,7 @@ function QuotesPage() {
                       </ul>
                     </div>
                   )}
-                  {validation.valid && validation.system_count > 0 && (
+                  {validation.valid && validation.missing.length === 0 && (
                     <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3">
                       <p className="text-sm font-semibold text-emerald-700 flex items-center gap-1">
                         <CheckCircle size={16} />

@@ -32,8 +32,7 @@ export const Route = createFileRoute("/admin/leads/$id")({
 });
 
 function LeadDetailPage() {
-  const params = use(Route.useRouteContext());
-  const { lead, activities, docs } = params;
+  const { lead, activities, docs } = Route.useLoaderData();
 
   const [localLead, setLocalLead] = useState(lead);
   const [localActivities, setLocalActivities] = useState(activities);

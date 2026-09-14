@@ -14,7 +14,7 @@ function WebsitePage() {
     <AdminLayout>
       <PageHeader
         title="Website"
-        subtitle="Manage the public website content and CMS"
+        description="Manage the public website content and CMS"
       />
 
       <div className="rounded-xl border border-dashed border-border bg-white p-8 text-center">

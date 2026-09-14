@@ -5,7 +5,7 @@ import { getSiteContent, saveSiteContent, uploadSiteMedia } from "@/lib/site-con
 // can call the upload server fn without prop-threading through every section.
 let currentPasskey: string | null = null;
 
-type MediaType = "image" | "video";
+export type MediaType = "image" | "video";
 type IconName =
   | "building"
   | "calendar"
@@ -26,7 +26,7 @@ type IconName =
   | "check"
   | "clock";
 
-interface MediaItem {
+export interface MediaItem {
   id: string;
   type: MediaType;
   src: string;
@@ -2368,7 +2368,7 @@ function createId() {
   return Math.random().toString(36).slice(2, 10);
 }
 
-function readFileAsDataUrl(file: File) {
+export function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ""));
@@ -2378,7 +2378,7 @@ function readFileAsDataUrl(file: File) {
 }
 
 // Upload to Supabase Storage when admin is signed in; fall back to inline data URL otherwise.
-async function uploadFile(file: File): Promise<string> {
+export async function uploadFile(file: File): Promise<string> {
   if (!currentPasskey) {
     return readFileAsDataUrl(file);
   }
