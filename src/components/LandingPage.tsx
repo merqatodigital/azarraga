@@ -1530,8 +1530,12 @@ export default function App() {
                           />
                         </div>
                         {site.services.map((service) => (
-                          <div key={service.id} className="rounded-2xl border border-slate-200 p-4">
-                            <div className="grid gap-4 md:grid-cols-2">
+                          <details key={service.id} className="group rounded-2xl border border-slate-200 p-4">
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                              <span className="text-sm font-bold text-slate-900">{service.title || "Untitled Service"}</span>
+                              <span className="text-[11px] font-semibold text-slate-400 transition group-open:rotate-90">▶</span>
+                            </summary>
+                            <div className="mt-4 grid gap-4 md:grid-cols-2">
                               <Field
                                 label="Service Title"
                                 value={service.title}
