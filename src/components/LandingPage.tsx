@@ -1859,6 +1859,141 @@ export default function App() {
                                           </div>
                                         )}
                                       </div>
+                                      <div className="rounded-xl border border-slate-200 bg-white p-3">
+                                        <div className="flex flex-wrap items-center justify-between gap-3">
+                                          <p className="text-[12px] font-semibold text-slate-700">Systems / Sub-products ({product.subProducts.length})</p>
+                                          <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                              setSite((prev) =>
+                                                updateProduct(prev, service.id, product.id, (current) => ({
+                                                  ...current,
+                                                  subProducts: [
+                                                    ...current.subProducts,
+                                                    { id: createId(), name: "New System", description: "Describe this system here.", media: [] },
+                                                  ],
+                                                })),
+                                              )
+                                            }
+                                          >
+                                            Add Sub-product
+                                          </Button>
+                                        </div>
+                                        <div className="mt-3 space-y-3">
+                                          {product.subProducts.length === 0 && (
+                                            <div className="rounded-xl border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500">
+                                              No sub-products yet.
+                                            </div>
+                                          )}
+                                          {product.subProducts.map((sub) => (
+                                            <details key={sub.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                              <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                                                <span className="text-[12px] font-semibold text-slate-800">{sub.name || "Untitled System"}</span>
+                                                <span className="text-[11px] text-slate-500">{sub.media.length} media</span>
+                                              </summary>
+                                              <div className="mt-3 space-y-3">
+                                                <Field
+                                                  label="Sub-product Name"
+                                                  value={sub.name}
+                                                  onChange={(value) =>
+                                                    setSite((prev) =>
+                                                      updateProduct(prev, service.id, product.id, (current) => ({
+                                                        ...current,
+                                                        subProducts: current.subProducts.map((entry) => (entry.id === sub.id ? { ...entry, name: value } : entry)),
+                                                      })),
+                                                    )
+                                                  }
+                                                />
+                                                <TextAreaField
+                                                  label="Explanation"
+                                                  value={sub.description}
+                                                  onChange={(value) =>
+                                                    setSite((prev) =>
+                                                      updateProduct(prev, service.id, product.id, (current) => ({
+                                                        ...current,
+                                                        subProducts: current.subProducts.map((entry) =>
+                                                          entry.id === sub.id ? { ...entry, description: value } : entry,
+                                                        ),
+                                                      })),
+                                                    )
+                                                  }
+                                                />
+                                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                                  <p className="text-[12px] font-semibold text-slate-700">Sub-product Images & Videos</p>
+                                                  <MultiFileUploader
+                                                    label="Upload Media"
+                                                    accept="image/*,video/*"
+                                                    onFiles={(files) =>
+                                                      setSite((prev) =>
+                                                        updateProduct(prev, service.id, product.id, (current) => ({
+                                                          ...current,
+                                                          subProducts: current.subProducts.map((entry) =>
+                                                            entry.id === sub.id
+                                                              ? { ...entry, media: [...entry.media, ...files.map((file) => ({ id: createId(), ...file }))] }
+                                                              : entry,
+                                                          ),
+                                                        })),
+                                                      )
+                                                    }
+                                                  />
+                                                </div>
+                                                {sub.media.length > 0 && (
+                                                  <div className="grid gap-3 md:grid-cols-2">
+                                                    {sub.media.map((media) => (
+                                                      <MediaEditor
+                                                        key={media.id}
+                                                        title="Gallery Item"
+                                                        media={media}
+                                                        onChange={(nextMedia) =>
+                                                          setSite((prev) =>
+                                                            updateProduct(prev, service.id, product.id, (current) => ({
+                                                              ...current,
+                                                              subProducts: current.subProducts.map((entry) =>
+                                                                entry.id === sub.id
+                                                                  ? { ...entry, media: entry.media.map((item) => (item.id === media.id ? nextMedia : item)) }
+                                                                  : entry,
+                                                              ),
+                                                            })),
+                                                          )
+                                                        }
+                                                        onDelete={() =>
+                                                          setSite((prev) =>
+                                                            updateProduct(prev, service.id, product.id, (current) => ({
+                                                              ...current,
+                                                              subProducts: current.subProducts.map((entry) =>
+                                                                entry.id === sub.id
+                                                                  ? { ...entry, media: entry.media.filter((item) => item.id !== media.id) }
+                                                                  : entry,
+                                                              ),
+                                                            })),
+                                                          )
+                                                        }
+                                                      />
+                                                    ))}
+                                                  </div>
+                                                )}
+                                                <Button
+                                                  type="button"
+                                                  variant="destructive"
+                                                  size="sm"
+                                                  onClick={() =>
+                                                    setSite((prev) =>
+                                                      updateProduct(prev, service.id, product.id, (current) => ({
+                                                        ...current,
+                                                        subProducts: current.subProducts.filter((entry) => entry.id !== sub.id),
+                                                      })),
+                                                    )
+                                                  }
+                                                >
+                                                  Delete Sub-product
+                                                </Button>
+                                              </div>
+                                            </details>
+                                          ))}
+                                        </div>
+                                      </div>
                                       <Button
                                         type="button"
                                         variant="destructive"
