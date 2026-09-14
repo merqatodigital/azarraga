@@ -1780,7 +1780,7 @@ export default function App() {
                                               ...item,
                                               products: [
                                                 ...item.products,
-                                                { id: createId(), name: "New Product", description: "Add a complete product explanation here.", media: [] },
+                                                { id: createId(), name: "New Product", description: "Add a complete product explanation here.", media: [], subProducts: [] },
                                               ],
                                             }
                                           : item,
