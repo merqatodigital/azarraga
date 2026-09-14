@@ -405,7 +405,7 @@ const defaultSiteData: SiteData = {
 };
 
 export default function App() {
-  const [site, setSite] = useState<SiteData>(() => loadSiteData());
+  const [site, setSite] = useState<SiteData>(defaultSiteData);
   const [selectedProduct, setSelectedProduct] = useState<{ group: ServiceCard; product: ServiceProduct } | null>(null);
   const [selectedProductImage, setSelectedProductImage] = useState(0);
   const [adminOpen, setAdminOpen] = useState(false);
@@ -419,6 +419,7 @@ export default function App() {
   // Load saved content from the cloud on mount
   useEffect(() => {
     let cancelled = false;
+    setSite(loadSiteData());
     getSiteContent()
       .then(({ data }) => {
         if (cancelled || !data) return;
@@ -441,9 +442,10 @@ export default function App() {
       return;
     }
     if (!isAdmin || !currentPasskey) return;
+    const activePasskey = currentPasskey;
     setSaveStatus("saving");
     const handle = setTimeout(() => {
-      saveSiteContent({ data: { passkey: currentPasskey!, data: site as unknown as Record<string, unknown> } })
+      saveSiteContent({ data: { passkey: activePasskey, data: site as unknown as Record<string, unknown> } })
         .then(() => setSaveStatus("saved"))
         .catch((err) => {
           console.error("Failed to save site content:", err);
@@ -692,20 +694,35 @@ export default function App() {
                     <p className="mt-1.5 text-[12.5px] leading-relaxed text-slate-600">{card.desc}</p>
                   </div>
                 </div>
-                <div className="mt-4 space-y-1.5">
+                <div className="mt-5 space-y-2" aria-label={`${card.title} products`}>
                   {card.products.map((product) => (
                     <Button
                       key={product.id}
                       type="button"
-                      variant="ghost"
+                      variant="outline"
                       onClick={() => openProduct(card, product)}
-                      className="group/product h-auto w-full justify-between rounded-lg px-2 py-2 text-left text-[12px] font-medium text-slate-700 hover:bg-slate-50 hover:text-[var(--brand-primary)]"
+                      aria-label={`View details for ${product.name}`}
+                      className="group/product min-h-12 h-auto w-full justify-between gap-3 rounded-lg border-slate-200 bg-slate-50 px-3 py-2.5 text-left text-[12px] font-semibold text-slate-800 shadow-sm transition hover:border-[var(--brand-primary)] hover:bg-white hover:text-[var(--brand-primary)] hover:shadow-md focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] active:translate-y-px"
                     >
-                      <span className="flex min-w-0 items-center gap-2">
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: site.theme.primary }} />
-                        <span className="whitespace-normal">{product.name}</span>
+                      <span className="min-w-0 whitespace-normal leading-snug">{product.name}</span>
+                      <span className="flex shrink-0 items-center gap-1.5 text-[10px] font-semibold uppercase text-[var(--brand-primary)]">
+                        <span>View details</span>
+                        <svg
+                          width="15"
+                          height="15"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                          className="transition-transform group-hover/product:translate-x-0.5"
+                        >
+                          <path d="M5 12h14" />
+                          <path d="m13 6 6 6-6 6" />
+                        </svg>
                       </span>
-                      <Icon name="check" size={11} className="ml-2 shrink-0 -rotate-90 opacity-50 transition group-hover/product:translate-x-0.5 group-hover/product:opacity-100" />
                     </Button>
                   ))}
                 </div>
