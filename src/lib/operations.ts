@@ -1,4 +1,4 @@
-import type { Database, Tables } from "@/integrations/supabase/types";
+import type { Database, Tables, TablesInsert } from "@/integrations/supabase/types";
 
 // ── Money helpers ──────────────────────────────────────────────
 // All money stored as INTEGER cents (PHP). 100 cents = ₱1.00
@@ -74,24 +74,24 @@ export const TP_MILESTONE = {
 
 // ── Typed table accessors ──────────────────────────────────────
 
-export type CustomerRow = Tables<"public", "customers">["Row"];
-export type ProjectRow = Tables<"public", "projects">["Row"];
-export type ClientPORow = Tables<"public", "client_po">["Row"];
-export type POLineItemRow = Tables<"public", "po_line_items">["Row"];
-export type InvoiceRow = Tables<"public", "invoices">["Row"];
-export type InvoiceLineItemRow = Tables<"public", "invoice_line_items">["Row"];
-export type PaymentRow = Tables<"public", "payments">["Row"];
-export type SupplierRow = Tables<"public", "suppliers">["Row"];
-export type SupplierPORow = Tables<"public", "supplier_po">["Row"];
-export type ProjectCostRow = Tables<"public", "project_costs">["Row"];
+export type CustomerRow = Tables<"customers">;
+export type ProjectRow = Tables<"projects">;
+export type ClientPORow = Tables<"client_po">;
+export type POLineItemRow = Tables<"po_line_items">;
+export type InvoiceRow = Tables<"invoices">;
+export type InvoiceLineItemRow = Tables<"invoice_line_items">;
+export type PaymentRow = Tables<"payments">;
+export type SupplierRow = Tables<"suppliers">;
+export type SupplierPORow = Tables<"supplier_po">;
+export type ProjectCostRow = Tables<"project_costs">;
 
-export type CustomerInsert = Tables<"public", "customers">["Insert"];
-export type ProjectInsert = Tables<"public", "projects">["Insert"];
-export type ClientPOInsert = Tables<"public", "client_po">["Insert"];
-export type POLineItemInsert = Tables<"public", "po_line_items">["Insert"];
-export type InvoiceInsert = Tables<"public", "invoices">["Insert"];
-export type InvoiceLineItemInsert = Tables<"public", "invoice_line_items">["Insert"];
-export type PaymentInsert = Tables<"public", "payments">["Insert"];
-export type SupplierInsert = Tables<"public", "suppliers">["Insert"];
-export type SupplierPOInsert = Tables<"public", "supplier_po">["Insert"];
-export type ProjectCostInsert = Tables<"public", "project_costs">["Insert"];
+export type CustomerInsert = TablesInsert<"customers">;
+export type ProjectInsert = TablesInsert<"projects">;
+export type ClientPOInsert = TablesInsert<"client_po">;
+export type POLineItemInsert = TablesInsert<"po_line_items">;
+export type InvoiceInsert = TablesInsert<"invoices">;
+export type InvoiceLineItemInsert = TablesInsert<"invoice_line_items">;
+export type PaymentInsert = TablesInsert<"payments">;
+export type SupplierInsert = TablesInsert<"suppliers">;
+export type SupplierPOInsert = TablesInsert<"supplier_po">;
+export type ProjectCostInsert = TablesInsert<"project_costs">;

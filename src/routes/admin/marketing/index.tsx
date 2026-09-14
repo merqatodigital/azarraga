@@ -13,7 +13,7 @@ function MarketingPage() {
     <AdminLayout>
       <PageHeader
         title="Marketing"
-        subtitle="Prospects, campaigns, and lead sources"
+        description="Prospects, campaigns, and lead sources"
       />
 
       <EmptyState

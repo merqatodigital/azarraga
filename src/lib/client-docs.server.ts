@@ -72,7 +72,11 @@ export const uploadClientDoc = createServerFn({ method: "POST" })
 
     if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 
-    const { data: pub } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(path);
+    // Bucket is private (public buckets blocked) — use a long-lived signed URL
+    const { data: signed } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .createSignedUrl(path, 60 * 60 * 24 * 365);
+    const fileUrl = signed?.signedUrl ?? "";
 
     // Record in client_docs
     const { data: doc, error: docError } = await supabaseAdmin
@@ -84,7 +88,7 @@ export const uploadClientDoc = createServerFn({ method: "POST" })
         file_name: data.file_name,
         file_mime: data.file_mime,
         file_size_bytes: data.file_size_bytes,
-        file_url: pub.publicUrl,
+        file_url: fileUrl,
         storage_path: path,
         uploaded_by: "website",
         notes: data.notes ?? null,
@@ -96,7 +100,7 @@ export const uploadClientDoc = createServerFn({ method: "POST" })
 
     return {
       id: doc.id,
-      url: pub.publicUrl,
+      url: fileUrl,
       path: path,
       lead_reference: doc.lead_reference,
       po_number: doc.po_number,
@@ -151,7 +155,10 @@ export const uploadClientDocAdmin = createServerFn({ method: "POST" })
 
     if (uploadError) throw new Error(`Upload failed: ${uploadError.message}`);
 
-    const { data: pub } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(path);
+    const { data: signed } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .createSignedUrl(path, 60 * 60 * 24 * 365);
+    const fileUrl = signed?.signedUrl ?? "";
 
     const { data: doc, error: docError } = await supabaseAdmin
       .from("client_docs")
@@ -162,7 +169,7 @@ export const uploadClientDocAdmin = createServerFn({ method: "POST" })
         file_name: data.file_name,
         file_mime: data.file_mime,
         file_size_bytes: data.file_size_bytes,
-        file_url: pub.publicUrl,
+        file_url: fileUrl,
         storage_path: path,
         uploaded_by: "admin",
         notes: data.notes ?? null,
@@ -174,7 +181,7 @@ export const uploadClientDocAdmin = createServerFn({ method: "POST" })
 
     return {
       id: doc.id,
-      url: pub.publicUrl,
+      url: fileUrl,
       path: path,
     };
   });
@@ -329,6 +336,7 @@ export const listItemsPurchased = createServerFn({ method: "GET" })
         client_doc_id: z.string().uuid().optional(),
       })
       .optional()
+      .parse(input)
   )
   .handler(async ({ data }) => {
     let q = supabaseAdmin

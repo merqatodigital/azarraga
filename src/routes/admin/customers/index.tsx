@@ -51,7 +51,7 @@ function CustomersPage() {
     setSaving(true);
     setError("");
     try {
-      const c = await createCustomer({ name: form.name, ...form });
+      const c = await createCustomer({ data: { ...form } });
       setCustomers((prev) => [c, ...prev]);
       setForm({ name: "", contact_name: "", phone: "", email: "", address: "", city: "", lead_source: "" });
       setShowForm(false);

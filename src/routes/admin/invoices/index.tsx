@@ -62,7 +62,7 @@ function InvoicesPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showForm, setShowForm] = useState(false);
-  const [detailInvoice, setDetailInvoice] = useState<InvoiceRow | null>(null);
+  const [detailInvoice, setDetailInvoice] = useState<(InvoiceRow & { customer?: any; project?: any; client_po?: any }) | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
 
   // Form state
@@ -137,6 +137,7 @@ function InvoicesPage() {
       const total = subtotal - discount + tax;
 
       const invoice = await createInvoice({
+        data: {
         customer_id: form.customer_id,
         project_id: form.project_id,
         client_po_id: form.client_po_id || undefined,
@@ -150,6 +151,7 @@ function InvoicesPage() {
         tax_cents: tax,
         total_cents: total,
         status: "draft",
+        },
       });
 
       setInvoices((prev) => [invoice as InvoiceRow, ...prev]);
@@ -178,7 +180,7 @@ function InvoicesPage() {
 
   const handleStatusUpdate = async (invoiceId: string, status: string) => {
     try {
-      const updated = await updateInvoice({ id: invoiceId, status });
+      const updated = await updateInvoice({ data: { id: invoiceId, status: status as never } });
       setInvoices((prev) =>
         prev.map((inv) => (inv.id === invoiceId ? (updated as InvoiceRow) : inv))
       );
@@ -190,7 +192,7 @@ function InvoicesPage() {
   const handleCancel = async (invoiceId: string) => {
     if (!confirm("Cancel this invoice? This cannot be undone.")) return;
     try {
-      await cancelInvoice({ id: invoiceId });
+      await cancelInvoice({ data: { id: invoiceId } });
       setInvoices((prev) =>
         prev.map((inv) => (inv.id === invoiceId ? { ...inv, status: "cancelled" } : inv))
       );
@@ -202,7 +204,7 @@ function InvoicesPage() {
   const openDetail = async (invoiceId: string) => {
     setDetailLoading(true);
     try {
-      const inv = await getInvoice({ id: invoiceId });
+      const inv = await getInvoice({ data: { id: invoiceId } });
       setDetailInvoice(inv as InvoiceRow);
     } catch {
       setError("Failed to load invoice details");

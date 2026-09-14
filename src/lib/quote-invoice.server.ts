@@ -15,6 +15,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { toCents } from "@/lib/operations";
+import { listLeads } from "@/lib/leads.server";
+import { createQuote } from "@/lib/quotes.server";
 import type { InvoiceRow } from "@/lib/operations";
 import {
   createInvoice,
@@ -213,12 +215,12 @@ export const createInvoiceFromQuote = createServerFn({ method: "POST" })
     // 3. Get PO number from project
     let poNumber = null;
     if (project) {
-      const pos = await supabaseAdmin
+      const { data: pos } = await supabaseAdmin
         .from("client_po")
         .select("po_number")
         .eq("project_id", project.id)
         .maybeSingle();
-      if (pos) poNumber = pos.po_number;
+      if (pos?.po_number) poNumber = pos.po_number;
     }
 
     // 4. Determine line items
@@ -240,9 +242,9 @@ export const createInvoiceFromQuote = createServerFn({ method: "POST" })
           aluminum_system: item.aluminum_system,
         });
       }
-    } else if (quote.quote_systems && quote.quote_systems.length > 0) {
+    } else if ((quote as any).quote_systems && (quote as any).quote_systems.length > 0) {
       // Inherit from quote systems (deterministic, no LLM computation)
-      quote.quote_systems.forEach((sys: any, idx: number) => {
+      (quote as any).quote_systems.forEach((sys: any, idx: number) => {
         invoiceLineItems.push({
           sort_order: idx + 1,
           description: sys.description || sys.system_key,
@@ -306,7 +308,7 @@ export const createInvoiceFromQuote = createServerFn({ method: "POST" })
           tax_cents: item.tax_cents,
           line_total_cents: lineTotalCents,
         })
-        .catch(() => {});
+        .then(() => undefined, () => undefined);
     }
 
     const fullInvoice = await getInvoice({ data: { id: invoice.id } });
@@ -354,7 +356,7 @@ export const approveInvoice = createServerFn({ method: "POST" })
 
     const { data: invoice, error } = await supabaseAdmin
       .from("invoices")
-      .update(updates)
+      .update(updates as never)
       .eq("id", data.id)
       .select()
       .single();

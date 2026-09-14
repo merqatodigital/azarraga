@@ -810,7 +810,7 @@ export function validateQuoteSpecs(
       missing: [
         {
           system_key,
-          field: "system",
+          field: "system" as any,
           label: "System",
           reason: `Unknown system key: ${system_key}`,
           severity: "critical",
@@ -859,7 +859,7 @@ export function validateQuoteSpecs(
         reason: `Glass type must be specified. Available options: ${system.glass_options.join(", ")}.`,
         severity: "critical",
       });
-    } else if (!system.glass_options.includes(String(gt))) {
+    } else if (!(system.glass_options as readonly string[]).includes(String(gt))) {
       warnings.push(
         `Glass type "${gt}" is not in the standard options for ${system.name}. Confirm with owner.`
       );
@@ -1098,7 +1098,7 @@ export function getSystemRequiredSpecs(system_key: ProductSystemKey): string {
   lines.push("- Quantity (in " + s.default_unit + ")");
   lines.push("- Location");
 
-  if (s.finish !== undefined) {
+  if ("finish" in s) {
     lines.push("- Finish (recommended)");
   }
   if (s.screens.length > 0) {

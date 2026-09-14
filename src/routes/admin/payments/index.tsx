@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Search, Banknote, Calendar, Check, X } from "lucide-react";
+import { Plus, Search, Banknote, Calendar, Check, X, Receipt } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { formatCents, computeBalance } from "@/lib/operations";
 import type { PaymentRow, InvoiceRow, CustomerRow, ProjectRow, ClientPORow } from "@/lib/operations";
@@ -78,6 +78,7 @@ function PaymentsPage() {
     setError("");
     try {
       const payment = await createPayment({
+        data: {
         invoice_id: selectedInvoice,
         amount_cents: form.amount_cents,
         payment_method: form.payment_method,
@@ -85,6 +86,7 @@ function PaymentsPage() {
         notes: form.notes || undefined,
         confirmed: form.confirmed,
         payment_date: form.payment_date,
+        },
       });
       await load();
       setShowForm(false);
@@ -104,7 +106,7 @@ function PaymentsPage() {
 
   const handleConfirmToggle = async (paymentId: string, currentlyConfirmed: boolean) => {
     try {
-      await confirmPayment({ payment_id: paymentId, confirmed: !currentlyConfirmed });
+      await confirmPayment({ data: { payment_id: paymentId, confirmed: !currentlyConfirmed } });
       await load();
     } catch {
       // silent
@@ -114,7 +116,7 @@ function PaymentsPage() {
   const handleDeletePayment = async (paymentId: string) => {
     if (!confirm("Delete this payment record? The invoice balance will be recalculated.")) return;
     try {
-      await deletePayment({ id: paymentId });
+      await deletePayment({ data: { id: paymentId } });
       await load();
     } catch {
       // silent
@@ -296,7 +298,7 @@ function PaymentsPage() {
             {invoices.map((inv) => {
               const paid = inv.amount_paid_cents ?? 0;
               const balance = computeBalance(inv.total_cents ?? 0, paid);
-              const hasPayments = inv.line_items?.some((li) => li.payments && li.payments.length > 0) ?? false;
+              const hasPayments = (inv as any).line_items?.some((li: any) => li.payments && li.payments.length > 0) ?? false;
 
               if (search && ![
                 inv.invoice_number,
@@ -356,11 +358,11 @@ function PaymentsPage() {
                   </div>
 
                   {/* Payments for this invoice */}
-                  {(inv.line_items)?.flatMap((li) => li.payments ?? []).length > 0 && (
+                  {((inv as any).line_items)?.flatMap((li: any) => li.payments ?? []).length > 0 && (
                     <div className="mt-3">
                       <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Payments Recorded</h4>
                       <div className="mt-2 space-y-2">
-                        {((inv.line_items as { payments?: PaymentRow[] }[]) || []).flatMap((li) => li.payments ?? []).map((payment) => (
+                        {(((inv as any).line_items as { payments?: PaymentRow[] }[]) || []).flatMap((li) => li.payments ?? []).map((payment) => (
                           <div key={payment.id} className="flex items-center justify-between rounded-lg border border-border bg-background p-3">
                             <div className="flex items-center gap-3">
                               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-50 text-green-700">

@@ -1,5 +1,16 @@
-import { type LucideIcon } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@tanstack/react-router";
+import {
+  type LucideIcon,
+  LayoutDashboard,
+  Users,
+  UserSquare2,
+  CheckSquare,
+  FolderOpen,
+  Megaphone,
+  CreditCard,
+  MessageSquare,
+  Globe,
+} from "lucide-react";
 
 interface NavItem {
   label: string;
@@ -7,12 +18,24 @@ interface NavItem {
   icon: LucideIcon;
 }
 
+const DEFAULT_NAV_ITEMS: NavItem[] = [
+  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { label: "Leads", href: "/admin/leads", icon: Users },
+  { label: "Customers", href: "/admin/customers", icon: UserSquare2 },
+  { label: "Tasks", href: "/admin/tasks", icon: CheckSquare },
+  { label: "Documents", href: "/admin/documents", icon: FolderOpen },
+  { label: "Marketing", href: "/admin/marketing", icon: Megaphone },
+  { label: "Payments", href: "/admin/payments", icon: CreditCard },
+  { label: "Tala", href: "/admin/tala", icon: MessageSquare },
+  { label: "Website", href: "/admin/website", icon: Globe },
+];
+
 interface AdminSidebarProps {
-  navItems: NavItem[];
+  navItems?: NavItem[];
   onNavigate?: (href: string) => void;
 }
 
-export function AdminSidebar({ navItems }: AdminSidebarProps) {
+export function AdminSidebar({ navItems = DEFAULT_NAV_ITEMS }: AdminSidebarProps) {
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
       <div className="flex h-16 items-center justify-between border-b border-gray-200 px-6">
@@ -33,7 +56,7 @@ export function AdminSidebar({ navItems }: AdminSidebarProps) {
           return (
             <div key={item.href} className="group">
               <Link
-                href={item.href}
+                to={item.href}
                 className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900"
               >
                 <Icon size={18} className="text-gray-400 group-hover:text-gray-600" />
@@ -46,7 +69,7 @@ export function AdminSidebar({ navItems }: AdminSidebarProps) {
 
       <div className="border-t border-gray-200 p-4">
         <Link
-          href="/"
+          to="/"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"

@@ -1,4 +1,4 @@
-export function StatusBadge({ status }: { status: string }) {
+export function StatusBadge({ status }: { status: string; variant?: string }) {
   const normalized = status.toLowerCase().replace(/\s+/g, "-");
   const styles: Record<string, string> = {
     new: "bg-blue-50 text-blue-700 border-blue-200",

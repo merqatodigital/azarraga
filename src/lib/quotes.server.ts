@@ -43,7 +43,7 @@ export const createQuote = createServerFn({ method: "POST" })
       notes: z.string().max(5000).optional(),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const ref = await nextQuoteRef();
     const { data: quote, error } = await supabaseAdmin
       .from("quotes")
@@ -78,7 +78,7 @@ export const getQuote = createServerFn({ method: "GET" })
   .inputValidator((input) =>
     z.object({ id: z.string().uuid() }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const { data: quote, error } = await supabaseAdmin
       .from("quotes")
       .select(
@@ -114,9 +114,10 @@ export const listQuotes = createServerFn({ method: "GET" })
       project_id: z.string().uuid().optional(),
       status: z.string().max(50).optional(),
       search: z.string().max(200).optional(),
-    }).optional()
+    }).optional().parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: rawInput }) => {
+    const input = rawInput ?? {};
     let q = supabaseAdmin
       .from("quotes")
       .select(
@@ -175,7 +176,7 @@ export const updateQuote = createServerFn({ method: "POST" })
       prepared_by: z.string().max(200).optional(),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const set: Record<string, unknown> = {};
     if (input.notes !== undefined) set.notes = input.notes;
     if (input.validity_days !== undefined) set.validity_days = input.validity_days;
@@ -184,7 +185,7 @@ export const updateQuote = createServerFn({ method: "POST" })
 
     const { data: quote, error } = await supabaseAdmin
       .from("quotes")
-      .update(set)
+      .update(set as never)
       .eq("id", input.id)
       .select()
       .single();
@@ -200,12 +201,12 @@ export const cancelQuote = createServerFn({ method: "POST" })
       reason: z.string().max(2000).optional(),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const set: Record<string, unknown> = { status: "draft", updated_at: new Date().toISOString() };
     if (input.reason !== undefined) set.notes = input.reason;
     const { error } = await supabaseAdmin
       .from("quotes")
-      .update(set)
+      .update(set as never)
       .eq("id", input.id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -244,7 +245,7 @@ export const addQuoteSystem = createServerFn({ method: "POST" })
       notes: z.string().max(2000).optional(),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const { data: system, error } = await supabaseAdmin
       .from("quote_systems")
       .insert({
@@ -294,14 +295,14 @@ export const updateQuoteSystem = createServerFn({ method: "POST" })
       notes: z.string().max(2000).optional(),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const set: Record<string, unknown> = {};
     for (const k of Object.keys(input) as (keyof typeof input)[]) {
       if (k !== "id" && input[k] !== undefined) set[k] = input[k];
     }
     const { data: system, error } = await supabaseAdmin
       .from("quote_systems")
-      .update(set)
+      .update(set as never)
       .eq("id", input.id)
       .select()
       .single();
@@ -313,7 +314,7 @@ export const deleteQuoteSystem = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z.object({ id: z.string().uuid() }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const { error } = await supabaseAdmin
       .from("quote_systems")
       .delete()
@@ -330,7 +331,7 @@ export const validateQuote = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z.object({ quote_id: z.string().uuid() }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const { data: systems } = await supabaseAdmin
       .from("quote_systems")
       .select("*")
@@ -388,7 +389,7 @@ export const calculateQuoteTotals = createServerFn({ method: "POST" })
   .inputValidator((input) =>
     z.object({ quote_id: z.string().uuid() }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const { data: systems } = await supabaseAdmin
       .from("quote_systems")
       .select("quantity, unit")
@@ -417,7 +418,7 @@ export const submitQuoteForApproval = createServerFn({ method: "POST" })
       prepared_by: z.string().max(200).optional(),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const { data: quote, error } = await supabaseAdmin
       .from("quotes")
       .update({
@@ -440,7 +441,7 @@ export const approveQuote = createServerFn({ method: "POST" })
       approved_by: z.string().max(200),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const { data: quote, error } = await supabaseAdmin
       .from("quotes")
       .update({
@@ -462,7 +463,7 @@ export const rejectQuote = createServerFn({ method: "POST" })
       reason: z.string().max(2000),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const set: Record<string, unknown> = {
       status: "draft",
       notes: input.reason,
@@ -470,7 +471,7 @@ export const rejectQuote = createServerFn({ method: "POST" })
     };
     const { error } = await supabaseAdmin
       .from("quotes")
-      .update(set)
+      .update(set as never)
       .eq("id", input.id);
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -487,7 +488,7 @@ export const convertQuoteToProject = createServerFn({ method: "POST" })
       project_id: z.string().uuid(),
     }).parse(input)
   )
-  .handler(async ({ input }) => {
+  .handler(async ({ data: input }) => {
     const { error } = await supabaseAdmin
       .from("quotes")
       .update({

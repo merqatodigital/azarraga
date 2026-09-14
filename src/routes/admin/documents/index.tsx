@@ -13,13 +13,13 @@ function DocumentsPage() {
     <AdminLayout>
       <PageHeader
         title="Documents"
-        subtitle="Quotations, purchase orders, invoices, receipts, and related files"
+        description="Quotations, purchase orders, invoices, receipts, and related files"
       />
 
       <EmptyState
         title="No documents yet"
         description="Upload quotations, purchase orders, invoices, or other project documents. TALA can help extract structured data from uploaded files."
-        icon="folder"
+        icon="file"
       />
 
       <div className="mt-6">

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/admin/")({
 });
 
 function DashboardPage() {
-  const { stats } = Route.useRouteContext();
+  const { stats } = Route.useLoaderData();
 
   return (
     <AdminLayout>
@@ -34,37 +34,37 @@ function DashboardPage() {
           title="Total Receivables"
           value={stats ? formatCents(stats.totalReceivables) : "—"}
           icon={Receipt}
-          description={stats ? "Outstanding invoice balances" : "No invoice data yet"}
+          subtitle={stats ? "Outstanding invoice balances" : "No invoice data yet"}
         />
         <MetricCard
           title="Active Projects"
           value={stats ? stats.activeProjectsCount.toString() : "—"}
           icon={Hammer}
-          description="In production (not completed)"
+          subtitle="In production (not completed)"
         />
         <MetricCard
           title="Collections Due"
           value={stats ? (stats.collectionsDue > 0 ? "Today" : "—") : "—"}
           icon={Banknote}
-          description={stats ? `Invoices due ${new Date().toLocaleDateString("en-PH")}` : "No invoice data yet"}
+          subtitle={stats ? `Invoices due ${new Date().toLocaleDateString("en-PH")}` : "No invoice data yet"}
         />
         <MetricCard
           title="Overdue Collections"
           value={stats ? stats.overdueCount.toString() : "—"}
           icon={Clock}
-          description={stats && stats.overdueCount > 0 ? "Requires immediate attention" : "No overdue invoices"}
+          subtitle={stats && stats.overdueCount > 0 ? "Requires immediate attention" : "No overdue invoices"}
         />
         <MetricCard
           title="Billing-Ready Projects"
           value={stats ? stats.billingProjectsCount.toString() : "—"}
           icon={ArrowUpRight}
-          description="Ready for invoicing"
+          subtitle="Ready for invoicing"
         />
         <MetricCard
           title="Billing Outstanding"
           value={stats ? formatCents(stats.billingOutstanding) : "—"}
           icon={Banknote}
-          description="Open invoice balances on billing-ready projects"
+          subtitle="Open invoice balances on billing-ready projects"
         />
       </div>
 
@@ -99,7 +99,7 @@ function DashboardPage() {
         <EmptyState
           title="Quick Actions"
           description="Navigate to Customers, Projects, Invoices, or Payments to get started."
-          icon="settings"
+          icon="file"
         />
       </div>
 

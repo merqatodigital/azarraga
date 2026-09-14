@@ -1,4 +1,4 @@
-export function AdminHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+export function AdminHeader({ title = "Admin", subtitle }: { title?: string; subtitle?: string }) {
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white px-8">
       <div>
