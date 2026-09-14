@@ -1953,8 +1953,9 @@ function AdminInput({ placeholder, type = "text" }: { placeholder: string; type?
 }
 
 function AdminSection({ title, description, children }: { title: string; description: string; children: ReactNode }) {
+  const anchorId = `admin-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
-    <details open className="rounded-3xl border border-slate-200 bg-white p-4 md:p-5">
+    <details open id={anchorId} className="scroll-mt-24 rounded-3xl border border-slate-200 bg-white p-4 md:p-5">
       <summary className="cursor-pointer list-none">
         <div className="flex flex-col gap-1 pr-8">
           <h4 className="text-base font-bold text-slate-900">{title}</h4>
@@ -2063,7 +2064,7 @@ function ArrayStringEditor({
       </div>
       <div className="space-y-2">
         {items.map((item, index) => (
-          <div key={`${item}-${index}`} className="grid gap-2 rounded-2xl border border-slate-200 p-3 md:grid-cols-[1fr_auto]">
+          <div key={index} className="grid gap-2 rounded-2xl border border-slate-200 p-3 md:grid-cols-[1fr_auto]">
             <input
               value={item}
               onChange={(event) => onChange(items.map((current, currentIndex) => (currentIndex === index ? event.target.value : current)))}
