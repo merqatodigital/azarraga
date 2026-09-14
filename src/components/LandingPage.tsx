@@ -549,7 +549,16 @@ export default function App() {
   const openProduct = (group: ServiceCard, product: ServiceProduct) => {
     setSelectedProduct({ group, product });
     setSelectedProductImage(0);
+    setSelectedSubProductId(null);
   };
+
+  const openSubProduct = (id: string | null) => {
+    setSelectedSubProductId(id);
+    setSelectedProductImage(0);
+  };
+
+  const activeSubProduct = selectedProduct?.product.subProducts?.find((sub) => sub.id === selectedSubProductId) ?? null;
+  const activeDetail = activeSubProduct ?? selectedProduct?.product ?? null;
 
   return (
     <div
