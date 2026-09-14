@@ -56,12 +56,21 @@ interface AboutCard {
   media: MediaItem;
 }
 
-interface ServiceProduct {
+interface ServiceSubProduct {
   id: string;
   name: string;
   description: string;
   media: MediaItem[];
 }
+
+interface ServiceProduct {
+  id: string;
+  name: string;
+  description: string;
+  media: MediaItem[];
+  subProducts: ServiceSubProduct[];
+}
+
 
 interface ServiceCard {
   id: string;
