@@ -56,12 +56,21 @@ interface AboutCard {
   media: MediaItem;
 }
 
-interface ServiceProduct {
+interface ServiceSubProduct {
   id: string;
   name: string;
   description: string;
   media: MediaItem[];
 }
+
+interface ServiceProduct {
+  id: string;
+  name: string;
+  description: string;
+  media: MediaItem[];
+  subProducts: ServiceSubProduct[];
+}
+
 
 interface ServiceCard {
   id: string;
@@ -180,7 +189,7 @@ const iconOptions: IconName[] = [
 ];
 
 const defaultSiteData: SiteData = {
-  serviceCatalogVersion: 2,
+  serviceCatalogVersion: 3,
   theme: {
     primary: "#0b3b8f",
     primaryDark: "#082f73",
@@ -259,12 +268,36 @@ const defaultSiteData: SiteData = {
       icon: "window",
       media: { id: createId(), type: "image", src: "/images/window.jpg", alt: "Aluminum window systems" },
       products: createProducts([
-        ["Casement Windows", "Side-hinged windows that open outward for excellent ventilation, a wide view, and a tight weather seal.", "/images/window.jpg"],
-        ["Awning Windows", "Top-hinged windows that open outward, allowing airflow while helping shield interiors from light rain.", "/images/hero-small1.jpg"],
-        ["Sliding Windows", "Space-saving horizontal sliding windows with smooth operation and durable aluminum framing.", "/images/window.jpg"],
-        ["Jalousie Windows", "Adjustable glass-louver windows designed for generous, controllable airflow in tropical spaces.", "/images/hero-small1.jpg"],
-        ["Fixed Windows", "Non-opening picture windows that maximize daylight and clear views with a clean, secure finish.", "/images/window.jpg"],
+        ["Casement Windows", "Side-hinged windows that open outward for excellent ventilation, a wide view, and a tight weather seal.", "/images/window.jpg", [
+          ["38 Series", "Entry-level casement system with a slim 38mm aluminum frame, suited to standard residential openings.", "/images/window.jpg"],
+          ["50 Series", "Mid-range 50mm casement system with stronger framing and improved sealing for larger panels.", "/images/hero-small1.jpg"],
+          ["60 Series", "Premium 60mm casement system built for large openings, heavier glass, and high wind exposure.", "/images/window.jpg"],
+        ]],
+        ["Awning Windows", "Top-hinged windows that open outward, allowing airflow while helping shield interiors from light rain.", "/images/hero-small1.jpg", [
+          ["38 Series", "Entry-level awning system with a 38mm frame for standard residential and utility openings.", "/images/hero-small1.jpg"],
+          ["50 Series", "Mid-range 50mm awning system with better sealing and support for wider sashes.", "/images/window.jpg"],
+          ["60 Series", "Premium 60mm awning system for large spans, thicker glass, and demanding weather conditions.", "/images/hero-small1.jpg"],
+        ]],
+        ["Sliding Windows", "Space-saving horizontal sliding windows with smooth operation and durable aluminum framing.", "/images/window.jpg", [
+          ["798 Series", "Entry-level sliding system for standard residential windows with reliable everyday operation.", "/images/window.jpg"],
+          ["900 Series", "Heavier sliding profile with stronger interlocks, suited to wider panels and darker finishes.", "/images/hero-small1.jpg"],
+          ["868 Series", "Slim-line sliding system with a clean, narrow sightline for modern interiors.", "/images/window.jpg"],
+          ["130 Series", "Premium large-panel sliding system for wide openings and panoramic views.", "/images/hero-main.jpg"],
+        ]],
+        ["Jalousie Windows", "Adjustable glass-louver windows designed for generous, controllable airflow in tropical spaces.", "/images/hero-small1.jpg", [
+          ["4 Inches Blades Jalousie", "Standard jalousie with 4-inch glass blades for steady ventilation in everyday residential openings.", "/images/hero-small1.jpg"],
+          ["6 Inches Blades Jalousie", "Jalousie with wider 6-inch blades for greater airflow and a clearer outward view.", "/images/window.jpg"],
+          ["4 Inches High-End Jalousie", "Upgraded 4-inch jalousie with heavier frames, smoother operators, and a cleaner finish.", "/images/hero-small1.jpg"],
+          ["6 Inches High-End Jalousie", "Premium 6-inch jalousie with the strongest framing and the highest-grade hardware we carry.", "/images/window.jpg"],
+        ]],
+        ["Fixed Windows", "Non-opening picture windows that maximize daylight and clear views with a clean, secure finish.", "/images/window.jpg", [
+          ["Low-End Fixed", "Economical fixed window for straightforward openings where daylight is the priority.", "/images/window.jpg"],
+          ["Low-End/Middle-End Fixed", "Mid-grade fixed window with sturdier framing and a more refined finish.", "/images/hero-small1.jpg"],
+          ["Frameless Fixed", "Minimal frameless fixed glazing for the cleanest possible sightlines.", "/images/hero-main.jpg"],
+          ["Awning/High-End Fixed", "Premium fixed glazing that pairs with awning sashes for combined light and ventilation.", "/images/window.jpg"],
+        ]],
         ["Folding Windows", "Multi-panel window systems that fold neatly aside to create a wide, flexible opening.", "/images/hero-main.jpg"],
+
       ]),
     },
     {
@@ -278,8 +311,18 @@ const defaultSiteData: SiteData = {
         ["Bi-Fold Doors", "Connected door panels that fold and stack to open rooms to patios, gardens, or commercial spaces.", "/images/door.jpg"],
         ["Sliding Doors", "Smooth-gliding glass and aluminum doors that save floor space and bring in expansive natural light.", "/images/hero-main.jpg"],
         ["Casement/Swing Doors", "Hinged entry doors built to suit residential and commercial openings with dependable hardware.", "/images/door.jpg"],
-        ["Roll-Up Doors", "Compact vertical-opening doors for storefronts, service areas, garages, and secure commercial access.", "/images/commercial.jpg"],
-        ["Hanging Doors", "Top-hung door systems with clean floor lines and smooth movement for contemporary interiors.", "/images/door.jpg"],
+        ["Roll-Up Doors", "Compact vertical-opening doors for storefronts, service areas, garages, and secure commercial access.", "/images/commercial.jpg", [
+          ["Polycarbonate Roll Up", "Translucent polycarbonate slats that keep storefronts secure while letting daylight through.", "/images/commercial.jpg"],
+          ["Security Grill Roll Up", "Open grill shutter that secures the opening while keeping the display visible and ventilated.", "/images/commercial.jpg"],
+          ["Stainless Steel Roll Up", "Corrosion-resistant stainless shutter suited to coastal air and heavy daily use.", "/images/showroom.jpg"],
+          ["Galvalume Roll Up", "Durable galvalume shutter offering solid protection at a practical cost.", "/images/commercial.jpg"],
+        ]],
+        ["Hanging Doors", "Top-hung door systems with clean floor lines and smooth movement for contemporary interiors.", "/images/door.jpg", [
+          ["Barn Door", "Exposed top-hung barn door with a warm framed panel and smooth rolling hardware.", "/images/door.jpg"],
+          ["Ghost Series", "Frosted glass hanging door with concealed tracking for a soft, minimal look.", "/images/shower.jpg"],
+          ["Frameless Hanging Door", "Fully frameless glass hanging door for the cleanest modern interior transition.", "/images/shower.jpg"],
+        ]],
+
       ]),
     },
     {
@@ -408,6 +451,7 @@ export default function App() {
   const [site, setSite] = useState<SiteData>(defaultSiteData);
   const [selectedProduct, setSelectedProduct] = useState<{ group: ServiceCard; product: ServiceProduct } | null>(null);
   const [selectedProductImage, setSelectedProductImage] = useState(0);
+  const [selectedSubProductId, setSelectedSubProductId] = useState<string | null>(null);
   const [adminOpen, setAdminOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [passkey, setPasskey] = useState("");
@@ -505,7 +549,16 @@ export default function App() {
   const openProduct = (group: ServiceCard, product: ServiceProduct) => {
     setSelectedProduct({ group, product });
     setSelectedProductImage(0);
+    setSelectedSubProductId(null);
   };
+
+  const openSubProduct = (id: string | null) => {
+    setSelectedSubProductId(id);
+    setSelectedProductImage(0);
+  };
+
+  const activeSubProduct = selectedProduct?.product.subProducts?.find((sub) => sub.id === selectedSubProductId) ?? null;
+  const activeDetail = activeSubProduct ?? selectedProduct?.product ?? null;
 
   return (
     <div
@@ -743,9 +796,9 @@ export default function App() {
             <div className="grid min-h-[460px] lg:grid-cols-[1.25fr_0.75fr]">
               <div className="bg-slate-100 p-3 sm:p-5">
                 <div className="aspect-[4/3] overflow-hidden rounded-xl bg-white">
-                  {selectedProduct.product.media[selectedProductImage] ? (
+                  {activeDetail?.media[selectedProductImage] ? (
                     <MediaDisplay
-                      media={selectedProduct.product.media[selectedProductImage]}
+                      media={activeDetail.media[selectedProductImage]}
                       className="h-full w-full object-cover"
                       autoPlay
                     />
@@ -753,9 +806,9 @@ export default function App() {
                     <div className="grid h-full place-items-center text-sm text-slate-400">Images coming soon</div>
                   )}
                 </div>
-                {selectedProduct.product.media.length > 1 && (
+                {(activeDetail?.media.length ?? 0) > 1 && (
                   <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                    {selectedProduct.product.media.map((media, index) => (
+                    {activeDetail?.media.map((media, index) => (
                       <Button
                         key={media.id}
                         type="button"
@@ -771,19 +824,56 @@ export default function App() {
                 )}
               </div>
               <div className="flex flex-col justify-center p-6 sm:p-9">
-                <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--brand-primary)]">{selectedProduct.group.title}</div>
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--brand-primary)]">
+                  {activeSubProduct ? `${selectedProduct.group.title} · ${selectedProduct.product.name}` : selectedProduct.group.title}
+                </div>
                 <DialogTitle className="mt-2 pr-8 text-2xl font-bold text-slate-900 sm:text-3xl" style={{ fontFamily: site.theme.headingFont }}>
-                  {selectedProduct.product.name}
+                  {activeDetail?.name}
                 </DialogTitle>
                 <DialogDescription className="mt-4 text-[14px] leading-7 text-slate-600">
-                  {selectedProduct.product.description}
+                  {activeDetail?.description}
                 </DialogDescription>
-                <Button asChild className="mt-7 w-fit hover:opacity-90" style={{ backgroundColor: site.theme.primary, color: site.theme.surface }}>
-                  <a href="#quote" onClick={() => setSelectedProduct(null)}>Request a Quote</a>
-                </Button>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  {activeSubProduct && (
+                    <Button type="button" variant="outline" onClick={() => openSubProduct(null)}>
+                      Back to {selectedProduct.product.name}
+                    </Button>
+                  )}
+                  <Button asChild className="w-fit hover:opacity-90" style={{ backgroundColor: site.theme.primary, color: site.theme.surface }}>
+                    <a href="#quote" onClick={() => setSelectedProduct(null)}>Request a Quote</a>
+                  </Button>
+                </div>
               </div>
             </div>
+            {selectedProduct.product.subProducts?.length > 0 && (
+              <div className="border-t border-slate-100 px-6 py-6 sm:px-9">
+                <p className="text-[13px] font-semibold uppercase tracking-wide text-slate-700">
+                  Available {selectedProduct.product.name} Systems
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {selectedProduct.product.subProducts.map((sub) => (
+                    <button
+                      key={sub.id}
+                      type="button"
+                      onClick={() => openSubProduct(sub.id)}
+                      aria-label={`View ${sub.name}`}
+                      className={`overflow-hidden rounded-xl border bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] ${sub.id === selectedSubProductId ? "border-[var(--brand-primary)]" : "border-slate-200"}`}
+                    >
+                      <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100">
+                        {sub.media[0] ? (
+                          <MediaDisplay media={sub.media[0]} className="h-full w-full object-cover" autoPlay />
+                        ) : (
+                          <div className="grid h-full place-items-center text-[11px] text-slate-400">No image yet</div>
+                        )}
+                      </div>
+                      <div className="px-3 py-2.5 text-[12px] font-semibold text-slate-800">{sub.name}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </DialogContent>
+
         )}
       </Dialog>
 
@@ -1690,7 +1780,7 @@ export default function App() {
                                               ...item,
                                               products: [
                                                 ...item.products,
-                                                { id: createId(), name: "New Product", description: "Add a complete product explanation here.", media: [] },
+                                                { id: createId(), name: "New Product", description: "Add a complete product explanation here.", media: [], subProducts: [] },
                                               ],
                                             }
                                           : item,
@@ -1768,6 +1858,141 @@ export default function App() {
                                             ))}
                                           </div>
                                         )}
+                                      </div>
+                                      <div className="rounded-xl border border-slate-200 bg-white p-3">
+                                        <div className="flex flex-wrap items-center justify-between gap-3">
+                                          <p className="text-[12px] font-semibold text-slate-700">Systems / Sub-products ({product.subProducts.length})</p>
+                                          <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="sm"
+                                            onClick={() =>
+                                              setSite((prev) =>
+                                                updateProduct(prev, service.id, product.id, (current) => ({
+                                                  ...current,
+                                                  subProducts: [
+                                                    ...current.subProducts,
+                                                    { id: createId(), name: "New System", description: "Describe this system here.", media: [] },
+                                                  ],
+                                                })),
+                                              )
+                                            }
+                                          >
+                                            Add Sub-product
+                                          </Button>
+                                        </div>
+                                        <div className="mt-3 space-y-3">
+                                          {product.subProducts.length === 0 && (
+                                            <div className="rounded-xl border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500">
+                                              No sub-products yet.
+                                            </div>
+                                          )}
+                                          {product.subProducts.map((sub) => (
+                                            <details key={sub.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                              <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                                                <span className="text-[12px] font-semibold text-slate-800">{sub.name || "Untitled System"}</span>
+                                                <span className="text-[11px] text-slate-500">{sub.media.length} media</span>
+                                              </summary>
+                                              <div className="mt-3 space-y-3">
+                                                <Field
+                                                  label="Sub-product Name"
+                                                  value={sub.name}
+                                                  onChange={(value) =>
+                                                    setSite((prev) =>
+                                                      updateProduct(prev, service.id, product.id, (current) => ({
+                                                        ...current,
+                                                        subProducts: current.subProducts.map((entry) => (entry.id === sub.id ? { ...entry, name: value } : entry)),
+                                                      })),
+                                                    )
+                                                  }
+                                                />
+                                                <TextAreaField
+                                                  label="Explanation"
+                                                  value={sub.description}
+                                                  onChange={(value) =>
+                                                    setSite((prev) =>
+                                                      updateProduct(prev, service.id, product.id, (current) => ({
+                                                        ...current,
+                                                        subProducts: current.subProducts.map((entry) =>
+                                                          entry.id === sub.id ? { ...entry, description: value } : entry,
+                                                        ),
+                                                      })),
+                                                    )
+                                                  }
+                                                />
+                                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                                  <p className="text-[12px] font-semibold text-slate-700">Sub-product Images & Videos</p>
+                                                  <MultiFileUploader
+                                                    label="Upload Media"
+                                                    accept="image/*,video/*"
+                                                    onFiles={(files) =>
+                                                      setSite((prev) =>
+                                                        updateProduct(prev, service.id, product.id, (current) => ({
+                                                          ...current,
+                                                          subProducts: current.subProducts.map((entry) =>
+                                                            entry.id === sub.id
+                                                              ? { ...entry, media: [...entry.media, ...files.map((file) => ({ id: createId(), ...file }))] }
+                                                              : entry,
+                                                          ),
+                                                        })),
+                                                      )
+                                                    }
+                                                  />
+                                                </div>
+                                                {sub.media.length > 0 && (
+                                                  <div className="grid gap-3 md:grid-cols-2">
+                                                    {sub.media.map((media) => (
+                                                      <MediaEditor
+                                                        key={media.id}
+                                                        title="Gallery Item"
+                                                        media={media}
+                                                        onChange={(nextMedia) =>
+                                                          setSite((prev) =>
+                                                            updateProduct(prev, service.id, product.id, (current) => ({
+                                                              ...current,
+                                                              subProducts: current.subProducts.map((entry) =>
+                                                                entry.id === sub.id
+                                                                  ? { ...entry, media: entry.media.map((item) => (item.id === media.id ? nextMedia : item)) }
+                                                                  : entry,
+                                                              ),
+                                                            })),
+                                                          )
+                                                        }
+                                                        onDelete={() =>
+                                                          setSite((prev) =>
+                                                            updateProduct(prev, service.id, product.id, (current) => ({
+                                                              ...current,
+                                                              subProducts: current.subProducts.map((entry) =>
+                                                                entry.id === sub.id
+                                                                  ? { ...entry, media: entry.media.filter((item) => item.id !== media.id) }
+                                                                  : entry,
+                                                              ),
+                                                            })),
+                                                          )
+                                                        }
+                                                      />
+                                                    ))}
+                                                  </div>
+                                                )}
+                                                <Button
+                                                  type="button"
+                                                  variant="destructive"
+                                                  size="sm"
+                                                  onClick={() =>
+                                                    setSite((prev) =>
+                                                      updateProduct(prev, service.id, product.id, (current) => ({
+                                                        ...current,
+                                                        subProducts: current.subProducts.filter((entry) => entry.id !== sub.id),
+                                                      })),
+                                                    )
+                                                  }
+                                                >
+                                                  Delete Sub-product
+                                                </Button>
+                                              </div>
+                                            </details>
+                                          ))}
+                                        </div>
                                       </div>
                                       <Button
                                         type="button"
@@ -2556,18 +2781,25 @@ function loadSiteData(): SiteData {
 
 function migrateSiteData(saved: unknown, fallback: SiteData): SiteData {
   const merged = deepMerge(fallback, saved);
-  if (!isObject(saved) || saved.serviceCatalogVersion === 2) {
+  if (!isObject(saved) || saved.serviceCatalogVersion === 3) {
     return {
       ...merged,
-      serviceCatalogVersion: 2,
+      serviceCatalogVersion: 3,
       services: merged.services.map(normalizeService),
     };
   }
 
   return {
     ...merged,
-    serviceCatalogVersion: 2,
-    services: defaultSiteData.services.map((group) => ({ ...group, products: group.products.map((product) => ({ ...product, media: [...product.media] })) })),
+    serviceCatalogVersion: 3,
+    services: defaultSiteData.services.map((group) => ({
+      ...group,
+      products: group.products.map((product) => ({
+        ...product,
+        media: [...product.media],
+        subProducts: product.subProducts.map((sub) => ({ ...sub, media: [...sub.media] })),
+      })),
+    })),
   };
 }
 
@@ -2578,6 +2810,14 @@ function normalizeService(value: ServiceCard): ServiceCard {
         name: typeof product.name === "string" ? product.name : "Untitled Product",
         description: typeof product.description === "string" ? product.description : "",
         media: Array.isArray(product.media) ? product.media.filter(isMediaItem) : [],
+        subProducts: Array.isArray(product.subProducts)
+          ? product.subProducts.filter(isObject).map((sub) => ({
+              id: typeof sub.id === "string" ? sub.id : createId(),
+              name: typeof sub.name === "string" ? sub.name : "Untitled System",
+              description: typeof sub.description === "string" ? sub.description : "",
+              media: Array.isArray(sub.media) ? sub.media.filter(isMediaItem) : [],
+            }))
+          : [],
       }))
     : [];
   return { ...value, products };
@@ -2598,14 +2838,23 @@ function updateProduct(site: SiteData, serviceId: string, productId: string, upd
   };
 }
 
-function createProducts(entries: Array<[string, string, string]>): ServiceProduct[] {
-  return entries.map(([name, description, src]) => ({
+type SubProductSeed = [string, string, string];
+
+function createProducts(entries: Array<[string, string, string, SubProductSeed[]?]>): ServiceProduct[] {
+  return entries.map(([name, description, src, subs]) => ({
     id: createId(),
     name,
     description,
     media: [{ id: createId(), type: "image", src, alt: name }],
+    subProducts: (subs ?? []).map(([subName, subDescription, subSrc]) => ({
+      id: createId(),
+      name: subName,
+      description: subDescription,
+      media: [{ id: createId(), type: "image" as const, src: subSrc, alt: subName }],
+    })),
   }));
 }
+
 
 function deepMerge<T>(base: T, override: unknown): T {
   if (Array.isArray(base)) {
