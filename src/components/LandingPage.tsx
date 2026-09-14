@@ -1000,6 +1000,18 @@ export default function App() {
                     </div>
                   </div>
 
+                  <div className="sticky top-[73px] z-10 flex flex-wrap gap-2 border-b border-slate-200 bg-slate-50/95 px-4 py-2.5 backdrop-blur md:px-6">
+                    {["Brand Kit", "Header", "Hero", "Trust Bar", "Company Section", "Services Section", "Projects Section", "Process Section", "Promo, Quote & Contact", "Footer"].map((sectionTitle) => (
+                      <a
+                        key={sectionTitle}
+                        href={`#admin-${sectionTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+                        className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-600 transition hover:border-blue-300 hover:text-blue-600"
+                      >
+                        {sectionTitle.replace(" Section", "")}
+                      </a>
+                    ))}
+                  </div>
+
                   <div className="space-y-4 p-4 md:p-6">
                     <AdminSection title="Brand Kit" description="Control the landing page color palette, fonts, and logo download.">
                       <div className="grid gap-4 md:grid-cols-2">
