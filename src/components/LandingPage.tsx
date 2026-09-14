@@ -2599,18 +2599,25 @@ function loadSiteData(): SiteData {
 
 function migrateSiteData(saved: unknown, fallback: SiteData): SiteData {
   const merged = deepMerge(fallback, saved);
-  if (!isObject(saved) || saved.serviceCatalogVersion === 2) {
+  if (!isObject(saved) || saved.serviceCatalogVersion === 3) {
     return {
       ...merged,
-      serviceCatalogVersion: 2,
+      serviceCatalogVersion: 3,
       services: merged.services.map(normalizeService),
     };
   }
 
   return {
     ...merged,
-    serviceCatalogVersion: 2,
-    services: defaultSiteData.services.map((group) => ({ ...group, products: group.products.map((product) => ({ ...product, media: [...product.media] })) })),
+    serviceCatalogVersion: 3,
+    services: defaultSiteData.services.map((group) => ({
+      ...group,
+      products: group.products.map((product) => ({
+        ...product,
+        media: [...product.media],
+        subProducts: product.subProducts.map((sub) => ({ ...sub, media: [...sub.media] })),
+      })),
+    })),
   };
 }
 
@@ -2621,6 +2628,14 @@ function normalizeService(value: ServiceCard): ServiceCard {
         name: typeof product.name === "string" ? product.name : "Untitled Product",
         description: typeof product.description === "string" ? product.description : "",
         media: Array.isArray(product.media) ? product.media.filter(isMediaItem) : [],
+        subProducts: Array.isArray(product.subProducts)
+          ? product.subProducts.filter(isObject).map((sub) => ({
+              id: typeof sub.id === "string" ? sub.id : createId(),
+              name: typeof sub.name === "string" ? sub.name : "Untitled System",
+              description: typeof sub.description === "string" ? sub.description : "",
+              media: Array.isArray(sub.media) ? sub.media.filter(isMediaItem) : [],
+            }))
+          : [],
       }))
     : [];
   return { ...value, products };
@@ -2641,14 +2656,23 @@ function updateProduct(site: SiteData, serviceId: string, productId: string, upd
   };
 }
 
-function createProducts(entries: Array<[string, string, string]>): ServiceProduct[] {
-  return entries.map(([name, description, src]) => ({
+type SubProductSeed = [string, string, string];
+
+function createProducts(entries: Array<[string, string, string, SubProductSeed[]?]>): ServiceProduct[] {
+  return entries.map(([name, description, src, subs]) => ({
     id: createId(),
     name,
     description,
     media: [{ id: createId(), type: "image", src, alt: name }],
+    subProducts: (subs ?? []).map(([subName, subDescription, subSrc]) => ({
+      id: createId(),
+      name: subName,
+      description: subDescription,
+      media: [{ id: createId(), type: "image" as const, src: subSrc, alt: subName }],
+    })),
   }));
 }
+
 
 function deepMerge<T>(base: T, override: unknown): T {
   if (Array.isArray(base)) {
