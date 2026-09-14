@@ -1606,38 +1606,20 @@ export default function App() {
                       </div>
                     </AdminSection>
 
-                    <AdminSection title="Services Section" description="Edit service cards, bullet points, and the image or video shown on each card.">
+                    <AdminSection title="Services Section" description="Manage product groups, detailed product information, and each product's image gallery.">
                       <div className="space-y-3">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <MultiFileUploader
-                            label="Upload Multiple Images"
-                            onFiles={(files) =>
-                              setSite((prev) => ({
-                                ...prev,
-                                services: [
-                                  ...prev.services,
-                                  ...files.map((f) => ({
-                                    id: createId(),
-                                    title: f.alt.replace(/\.[^/.]+$/, ""),
-                                    desc: "Add service details here.",
-                                    points: ["Feature one", "Feature two"],
-                                    icon: "glass" as IconName,
-                                    media: { id: createId(), ...f },
-                                  })),
-                                ],
-                              }))
-                            }
-                          />
-                        </div>
                         {site.services.map((service) => (
                           <details key={service.id} className="group rounded-2xl border border-slate-200 p-4">
                             <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
-                              <span className="text-sm font-bold text-slate-900">{service.title || "Untitled Service"}</span>
+                              <span>
+                                <span className="block text-sm font-bold text-slate-900">{service.title || "Untitled Product Group"}</span>
+                                <span className="mt-0.5 block text-[11px] text-slate-500">{service.products.length} products</span>
+                              </span>
                               <span className="text-[11px] font-semibold text-slate-400 transition group-open:rotate-90">▶</span>
                             </summary>
                             <div className="mt-4 grid gap-4 md:grid-cols-2">
                               <Field
-                                label="Service Title"
+                                label="Group Title"
                                 value={service.title}
                                 onChange={(value) =>
                                   setSite((prev) => ({
@@ -1660,7 +1642,7 @@ export default function App() {
                             </div>
                             <div className="mt-4">
                               <TextAreaField
-                                label="Service Description"
+                                label="Group Summary"
                                 value={service.desc}
                                 onChange={(value) =>
                                   setSite((prev) => ({
@@ -1671,21 +1653,8 @@ export default function App() {
                               />
                             </div>
                             <div className="mt-4">
-                              <ArrayStringEditor
-                                label="Bullet Points"
-                                items={service.points}
-                                addLabel="Add Bullet"
-                                onChange={(points) =>
-                                  setSite((prev) => ({
-                                    ...prev,
-                                    services: prev.services.map((item) => (item.id === service.id ? { ...item, points } : item)),
-                                  }))
-                                }
-                              />
-                            </div>
-                            <div className="mt-4">
                               <MediaEditor
-                                title="Service Media"
+                                title="Group Cover Image"
                                 media={service.media}
                                 onChange={(nextMedia) =>
                                   setSite((prev) => ({
@@ -1695,12 +1664,130 @@ export default function App() {
                                 }
                               />
                             </div>
+                            <div className="mt-6 border-t border-slate-200 pt-5">
+                              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                  <p className="text-sm font-bold text-slate-900">Products in this group</p>
+                                  <p className="text-[11px] text-slate-500">Each product opens its own visitor popup.</p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    setSite((prev) => ({
+                                      ...prev,
+                                      services: prev.services.map((item) =>
+                                        item.id === service.id
+                                          ? {
+                                              ...item,
+                                              products: [
+                                                ...item.products,
+                                                { id: createId(), name: "New Product", description: "Add a complete product explanation here.", media: [] },
+                                              ],
+                                            }
+                                          : item,
+                                      ),
+                                    }))
+                                  }
+                                >
+                                  Add Product
+                                </Button>
+                              </div>
+                              <div className="space-y-3">
+                                {service.products.map((product) => (
+                                  <details key={product.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
+                                      <span className="text-[13px] font-semibold text-slate-800">{product.name || "Untitled Product"}</span>
+                                      <span className="text-[11px] text-slate-500">{product.media.length} media</span>
+                                    </summary>
+                                    <div className="mt-4 space-y-4">
+                                      <Field
+                                        label="Product Name"
+                                        value={product.name}
+                                        onChange={(value) =>
+                                          setSite((prev) => updateProduct(prev, service.id, product.id, (current) => ({ ...current, name: value })))
+                                        }
+                                      />
+                                      <TextAreaField
+                                        label="Full Explanation"
+                                        value={product.description}
+                                        onChange={(value) =>
+                                          setSite((prev) => updateProduct(prev, service.id, product.id, (current) => ({ ...current, description: value })))
+                                        }
+                                      />
+                                      <div>
+                                        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                                          <p className="text-[12px] font-semibold text-slate-700">Product Images & Videos</p>
+                                          <MultiFileUploader
+                                            label="Upload Media"
+                                            accept="image/*,video/*"
+                                            onFiles={(files) =>
+                                              setSite((prev) =>
+                                                updateProduct(prev, service.id, product.id, (current) => ({
+                                                  ...current,
+                                                  media: [...current.media, ...files.map((file) => ({ id: createId(), ...file }))],
+                                                })),
+                                              )
+                                            }
+                                          />
+                                        </div>
+                                        {product.media.length === 0 ? (
+                                          <div className="rounded-xl border border-dashed border-slate-300 p-5 text-center text-xs text-slate-500">No product media yet.</div>
+                                        ) : (
+                                          <div className="grid gap-3 md:grid-cols-2">
+                                            {product.media.map((media) => (
+                                              <MediaEditor
+                                                key={media.id}
+                                                title="Gallery Item"
+                                                media={media}
+                                                onChange={(nextMedia) =>
+                                                  setSite((prev) =>
+                                                    updateProduct(prev, service.id, product.id, (current) => ({
+                                                      ...current,
+                                                      media: current.media.map((item) => (item.id === media.id ? nextMedia : item)),
+                                                    })),
+                                                  )
+                                                }
+                                                onDelete={() =>
+                                                  setSite((prev) =>
+                                                    updateProduct(prev, service.id, product.id, (current) => ({
+                                                      ...current,
+                                                      media: current.media.filter((item) => item.id !== media.id),
+                                                    })),
+                                                  )
+                                                }
+                                              />
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                      <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() =>
+                                          setSite((prev) => ({
+                                            ...prev,
+                                            services: prev.services.map((item) =>
+                                              item.id === service.id ? { ...item, products: item.products.filter((entry) => entry.id !== product.id) } : item,
+                                            ),
+                                          }))
+                                        }
+                                      >
+                                        Delete Product
+                                      </Button>
+                                    </div>
+                                  </details>
+                                ))}
+                              </div>
+                            </div>
                             <button
                               type="button"
                               onClick={() => setSite((prev) => ({ ...prev, services: prev.services.filter((item) => item.id !== service.id) }))}
                               className="mt-4 rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
                             >
-                              Delete Service Card
+                              Delete Product Group
                             </button>
                           </details>
                         ))}
@@ -1713,18 +1800,19 @@ export default function App() {
                                 ...prev.services,
                                 {
                                   id: createId(),
-                                  title: "New Service",
-                                  desc: "Add service details here.",
-                                  points: ["Feature one", "Feature two"],
+                                  title: "New Product Group",
+                                  desc: "Add a short group summary here.",
+                                  points: [],
                                   icon: "glass",
-                                  media: { id: createId(), type: "image", src: "/images/window.jpg", alt: "New service" },
+                                  media: { id: createId(), type: "image", src: "/images/window.jpg", alt: "New product group" },
+                                  products: [],
                                 },
                               ],
                             }))
                           }
                           className="rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
                         >
-                          Add Service Card
+                          Add Product Group
                         </button>
                       </div>
                     </AdminSection>
