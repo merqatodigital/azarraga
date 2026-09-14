@@ -268,12 +268,36 @@ const defaultSiteData: SiteData = {
       icon: "window",
       media: { id: createId(), type: "image", src: "/images/window.jpg", alt: "Aluminum window systems" },
       products: createProducts([
-        ["Casement Windows", "Side-hinged windows that open outward for excellent ventilation, a wide view, and a tight weather seal.", "/images/window.jpg"],
-        ["Awning Windows", "Top-hinged windows that open outward, allowing airflow while helping shield interiors from light rain.", "/images/hero-small1.jpg"],
-        ["Sliding Windows", "Space-saving horizontal sliding windows with smooth operation and durable aluminum framing.", "/images/window.jpg"],
-        ["Jalousie Windows", "Adjustable glass-louver windows designed for generous, controllable airflow in tropical spaces.", "/images/hero-small1.jpg"],
-        ["Fixed Windows", "Non-opening picture windows that maximize daylight and clear views with a clean, secure finish.", "/images/window.jpg"],
+        ["Casement Windows", "Side-hinged windows that open outward for excellent ventilation, a wide view, and a tight weather seal.", "/images/window.jpg", [
+          ["38 Series", "Entry-level casement system with a slim 38mm aluminum frame, suited to standard residential openings.", "/images/window.jpg"],
+          ["50 Series", "Mid-range 50mm casement system with stronger framing and improved sealing for larger panels.", "/images/hero-small1.jpg"],
+          ["60 Series", "Premium 60mm casement system built for large openings, heavier glass, and high wind exposure.", "/images/window.jpg"],
+        ]],
+        ["Awning Windows", "Top-hinged windows that open outward, allowing airflow while helping shield interiors from light rain.", "/images/hero-small1.jpg", [
+          ["38 Series", "Entry-level awning system with a 38mm frame for standard residential and utility openings.", "/images/hero-small1.jpg"],
+          ["50 Series", "Mid-range 50mm awning system with better sealing and support for wider sashes.", "/images/window.jpg"],
+          ["60 Series", "Premium 60mm awning system for large spans, thicker glass, and demanding weather conditions.", "/images/hero-small1.jpg"],
+        ]],
+        ["Sliding Windows", "Space-saving horizontal sliding windows with smooth operation and durable aluminum framing.", "/images/window.jpg", [
+          ["798 Series", "Entry-level sliding system for standard residential windows with reliable everyday operation.", "/images/window.jpg"],
+          ["900 Series", "Heavier sliding profile with stronger interlocks, suited to wider panels and darker finishes.", "/images/hero-small1.jpg"],
+          ["868 Series", "Slim-line sliding system with a clean, narrow sightline for modern interiors.", "/images/window.jpg"],
+          ["130 Series", "Premium large-panel sliding system for wide openings and panoramic views.", "/images/hero-main.jpg"],
+        ]],
+        ["Jalousie Windows", "Adjustable glass-louver windows designed for generous, controllable airflow in tropical spaces.", "/images/hero-small1.jpg", [
+          ["4 Inches Blades Jalousie", "Standard jalousie with 4-inch glass blades for steady ventilation in everyday residential openings.", "/images/hero-small1.jpg"],
+          ["6 Inches Blades Jalousie", "Jalousie with wider 6-inch blades for greater airflow and a clearer outward view.", "/images/window.jpg"],
+          ["4 Inches High-End Jalousie", "Upgraded 4-inch jalousie with heavier frames, smoother operators, and a cleaner finish.", "/images/hero-small1.jpg"],
+          ["6 Inches High-End Jalousie", "Premium 6-inch jalousie with the strongest framing and the highest-grade hardware we carry.", "/images/window.jpg"],
+        ]],
+        ["Fixed Windows", "Non-opening picture windows that maximize daylight and clear views with a clean, secure finish.", "/images/window.jpg", [
+          ["Low-End Fixed", "Economical fixed window for straightforward openings where daylight is the priority.", "/images/window.jpg"],
+          ["Low-End/Middle-End Fixed", "Mid-grade fixed window with sturdier framing and a more refined finish.", "/images/hero-small1.jpg"],
+          ["Frameless Fixed", "Minimal frameless fixed glazing for the cleanest possible sightlines.", "/images/hero-main.jpg"],
+          ["Awning/High-End Fixed", "Premium fixed glazing that pairs with awning sashes for combined light and ventilation.", "/images/window.jpg"],
+        ]],
         ["Folding Windows", "Multi-panel window systems that fold neatly aside to create a wide, flexible opening.", "/images/hero-main.jpg"],
+
       ]),
     },
     {
