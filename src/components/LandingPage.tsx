@@ -796,9 +796,9 @@ export default function App() {
             <div className="grid min-h-[460px] lg:grid-cols-[1.25fr_0.75fr]">
               <div className="bg-slate-100 p-3 sm:p-5">
                 <div className="aspect-[4/3] overflow-hidden rounded-xl bg-white">
-                  {selectedProduct.product.media[selectedProductImage] ? (
+                  {activeDetail?.media[selectedProductImage] ? (
                     <MediaDisplay
-                      media={selectedProduct.product.media[selectedProductImage]}
+                      media={activeDetail.media[selectedProductImage]}
                       className="h-full w-full object-cover"
                       autoPlay
                     />
@@ -806,9 +806,9 @@ export default function App() {
                     <div className="grid h-full place-items-center text-sm text-slate-400">Images coming soon</div>
                   )}
                 </div>
-                {selectedProduct.product.media.length > 1 && (
+                {(activeDetail?.media.length ?? 0) > 1 && (
                   <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-                    {selectedProduct.product.media.map((media, index) => (
+                    {activeDetail?.media.map((media, index) => (
                       <Button
                         key={media.id}
                         type="button"
@@ -824,19 +824,56 @@ export default function App() {
                 )}
               </div>
               <div className="flex flex-col justify-center p-6 sm:p-9">
-                <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--brand-primary)]">{selectedProduct.group.title}</div>
+                <div className="text-[11px] font-semibold uppercase tracking-wide text-[var(--brand-primary)]">
+                  {activeSubProduct ? `${selectedProduct.group.title} · ${selectedProduct.product.name}` : selectedProduct.group.title}
+                </div>
                 <DialogTitle className="mt-2 pr-8 text-2xl font-bold text-slate-900 sm:text-3xl" style={{ fontFamily: site.theme.headingFont }}>
-                  {selectedProduct.product.name}
+                  {activeDetail?.name}
                 </DialogTitle>
                 <DialogDescription className="mt-4 text-[14px] leading-7 text-slate-600">
-                  {selectedProduct.product.description}
+                  {activeDetail?.description}
                 </DialogDescription>
-                <Button asChild className="mt-7 w-fit hover:opacity-90" style={{ backgroundColor: site.theme.primary, color: site.theme.surface }}>
-                  <a href="#quote" onClick={() => setSelectedProduct(null)}>Request a Quote</a>
-                </Button>
+                <div className="mt-7 flex flex-wrap gap-3">
+                  {activeSubProduct && (
+                    <Button type="button" variant="outline" onClick={() => openSubProduct(null)}>
+                      Back to {selectedProduct.product.name}
+                    </Button>
+                  )}
+                  <Button asChild className="w-fit hover:opacity-90" style={{ backgroundColor: site.theme.primary, color: site.theme.surface }}>
+                    <a href="#quote" onClick={() => setSelectedProduct(null)}>Request a Quote</a>
+                  </Button>
+                </div>
               </div>
             </div>
+            {selectedProduct.product.subProducts?.length > 0 && (
+              <div className="border-t border-slate-100 px-6 py-6 sm:px-9">
+                <p className="text-[13px] font-semibold uppercase tracking-wide text-slate-700">
+                  Available {selectedProduct.product.name} Systems
+                </p>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  {selectedProduct.product.subProducts.map((sub) => (
+                    <button
+                      key={sub.id}
+                      type="button"
+                      onClick={() => openSubProduct(sub.id)}
+                      aria-label={`View ${sub.name}`}
+                      className={`overflow-hidden rounded-xl border bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] ${sub.id === selectedSubProductId ? "border-[var(--brand-primary)]" : "border-slate-200"}`}
+                    >
+                      <div className="aspect-[4/3] w-full overflow-hidden bg-slate-100">
+                        {sub.media[0] ? (
+                          <MediaDisplay media={sub.media[0]} className="h-full w-full object-cover" autoPlay />
+                        ) : (
+                          <div className="grid h-full place-items-center text-[11px] text-slate-400">No image yet</div>
+                        )}
+                      </div>
+                      <div className="px-3 py-2.5 text-[12px] font-semibold text-slate-800">{sub.name}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </DialogContent>
+
         )}
       </Dialog>
 
