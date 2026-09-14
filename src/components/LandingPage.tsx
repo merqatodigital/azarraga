@@ -771,7 +771,7 @@ export default function App() {
                 <DialogDescription className="mt-4 text-[14px] leading-7 text-slate-600">
                   {selectedProduct.product.description}
                 </DialogDescription>
-                <Button asChild className="mt-7 w-fit bg-[var(--brand-primary)] text-white hover:opacity-90">
+                <Button asChild className="mt-7 w-fit hover:opacity-90" style={{ backgroundColor: site.theme.primary, color: site.theme.surface }}>
                   <a href="#quote" onClick={() => setSelectedProduct(null)}>Request a Quote</a>
                 </Button>
               </div>
@@ -2557,15 +2557,10 @@ function migrateSiteData(saved: unknown, fallback: SiteData): SiteData {
     };
   }
 
-  const legacyServices = Array.isArray(saved.services) ? saved.services.filter(isObject) : [];
   return {
     ...merged,
     serviceCatalogVersion: 2,
-    services: defaultSiteData.services.map((group, index) => {
-      const legacy = legacyServices[index];
-      const legacyMedia = legacy && isMediaItem(legacy.media) ? legacy.media : group.media;
-      return { ...group, media: legacyMedia, products: group.products.map((product) => ({ ...product, media: [...product.media] })) };
-    }),
+    services: defaultSiteData.services.map((group) => ({ ...group, products: group.products.map((product) => ({ ...product, media: [...product.media] })) })),
   };
 }
 
