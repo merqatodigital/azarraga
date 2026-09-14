@@ -25,6 +25,7 @@ import { Route as AdminLeadsIndexRouteImport } from './routes/admin/leads/index'
 import { Route as AdminInvoicesIndexRouteImport } from './routes/admin/invoices/index'
 import { Route as AdminDocumentsIndexRouteImport } from './routes/admin/documents/index'
 import { Route as AdminCustomersIndexRouteImport } from './routes/admin/customers/index'
+import { Route as AdminQuotesNewRouteImport } from './routes/admin/quotes/new'
 import { Route as AdminLeadsIdRouteImport } from './routes/admin/leads/$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -107,6 +108,11 @@ const AdminCustomersIndexRoute = AdminCustomersIndexRouteImport.update({
   path: '/admin/customers/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminQuotesNewRoute = AdminQuotesNewRouteImport.update({
+  id: '/admin/quotes/new',
+  path: '/admin/quotes/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminLeadsIdRoute = AdminLeadsIdRouteImport.update({
   id: '/admin/leads/$id',
   path: '/admin/leads/$id',
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/login/': typeof LoginIndexRoute
   '/quote-request/': typeof QuoteRequestIndexRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
+  '/admin/quotes/new': typeof AdminQuotesNewRoute
   '/admin/customers/': typeof AdminCustomersIndexRoute
   '/admin/documents/': typeof AdminDocumentsIndexRoute
   '/admin/invoices/': typeof AdminInvoicesIndexRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginIndexRoute
   '/quote-request': typeof QuoteRequestIndexRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
+  '/admin/quotes/new': typeof AdminQuotesNewRoute
   '/admin/customers': typeof AdminCustomersIndexRoute
   '/admin/documents': typeof AdminDocumentsIndexRoute
   '/admin/invoices': typeof AdminInvoicesIndexRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/login/': typeof LoginIndexRoute
   '/quote-request/': typeof QuoteRequestIndexRoute
   '/admin/leads/$id': typeof AdminLeadsIdRoute
+  '/admin/quotes/new': typeof AdminQuotesNewRoute
   '/admin/customers/': typeof AdminCustomersIndexRoute
   '/admin/documents/': typeof AdminDocumentsIndexRoute
   '/admin/invoices/': typeof AdminInvoicesIndexRoute
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/login/'
     | '/quote-request/'
     | '/admin/leads/$id'
+    | '/admin/quotes/new'
     | '/admin/customers/'
     | '/admin/documents/'
     | '/admin/invoices/'
@@ -198,6 +208,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/quote-request'
     | '/admin/leads/$id'
+    | '/admin/quotes/new'
     | '/admin/customers'
     | '/admin/documents'
     | '/admin/invoices'
@@ -217,6 +228,7 @@ export interface FileRouteTypes {
     | '/login/'
     | '/quote-request/'
     | '/admin/leads/$id'
+    | '/admin/quotes/new'
     | '/admin/customers/'
     | '/admin/documents/'
     | '/admin/invoices/'
@@ -237,6 +249,7 @@ export interface RootRouteChildren {
   LoginIndexRoute: typeof LoginIndexRoute
   QuoteRequestIndexRoute: typeof QuoteRequestIndexRoute
   AdminLeadsIdRoute: typeof AdminLeadsIdRoute
+  AdminQuotesNewRoute: typeof AdminQuotesNewRoute
   AdminCustomersIndexRoute: typeof AdminCustomersIndexRoute
   AdminDocumentsIndexRoute: typeof AdminDocumentsIndexRoute
   AdminInvoicesIndexRoute: typeof AdminInvoicesIndexRoute
@@ -365,6 +378,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCustomersIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/quotes/new': {
+      id: '/admin/quotes/new'
+      path: '/admin/quotes/new'
+      fullPath: '/admin/quotes/new'
+      preLoaderRoute: typeof AdminQuotesNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/leads/$id': {
       id: '/admin/leads/$id'
       path: '/admin/leads/$id'
@@ -381,6 +401,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginIndexRoute: LoginIndexRoute,
   QuoteRequestIndexRoute: QuoteRequestIndexRoute,
   AdminLeadsIdRoute: AdminLeadsIdRoute,
+  AdminQuotesNewRoute: AdminQuotesNewRoute,
   AdminCustomersIndexRoute: AdminCustomersIndexRoute,
   AdminDocumentsIndexRoute: AdminDocumentsIndexRoute,
   AdminInvoicesIndexRoute: AdminInvoicesIndexRoute,
