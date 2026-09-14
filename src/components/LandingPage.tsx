@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ChangeEvent, type FormEvent, type ReactNode } from "react";
 import { getSiteContent, saveSiteContent, uploadSiteMedia } from "@/lib/site-content.functions";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 
 // Holds the admin passkey after successful login so MediaEditor/MultiFileUploader
 // can call the upload server fn without prop-threading through every section.
@@ -54,6 +55,13 @@ interface AboutCard {
   media: MediaItem;
 }
 
+interface ServiceProduct {
+  id: string;
+  name: string;
+  description: string;
+  media: MediaItem[];
+}
+
 interface ServiceCard {
   id: string;
   title: string;
@@ -61,6 +69,7 @@ interface ServiceCard {
   points: string[];
   icon: IconName;
   media: MediaItem;
+  products: ServiceProduct[];
 }
 
 interface ProjectCard {
@@ -241,27 +250,49 @@ const defaultSiteData: SiteData = {
   services: [
     {
       id: createId(),
-      title: "Custom Glass Systems",
-      desc: "Tempered, laminated, and insulated glass for partitions, railings, shower enclosures, and more.",
-      points: ["Frameless Glass", "Mirror & Glass Cut-to-Size", "Precision Fit"],
-      icon: "glass",
-      media: { id: createId(), type: "image", src: "/images/shower.jpg", alt: "Custom glass system" },
-    },
-    {
-      id: createId(),
-      title: "Aluminum Windows",
-      desc: "Sliding, casement, awning, and fixed windows—engineered for strength, smooth operation, and durability.",
-      points: ["Sliding / Casement / Awning", "Picture / Fixed and More", "Powder Coated Finish"],
+      title: "Windows By Type",
+      desc: "Custom aluminum window systems designed for ventilation, natural light, security, and Palawan's tropical climate.",
+      points: ["Casement Windows", "Awning Windows", "Sliding Windows", "Jalousie Windows", "Fixed Windows", "Folding Windows"],
       icon: "window",
-      media: { id: createId(), type: "image", src: "/images/window.jpg", alt: "Aluminum windows" },
+      media: { id: createId(), type: "image", src: "/images/window.jpg", alt: "Aluminum window systems" },
+      products: createProducts([
+        ["Casement Windows", "Side-hinged windows that open outward for excellent ventilation, a wide view, and a tight weather seal.", "/images/window.jpg"],
+        ["Awning Windows", "Top-hinged windows that open outward, allowing airflow while helping shield interiors from light rain.", "/images/hero-small1.jpg"],
+        ["Sliding Windows", "Space-saving horizontal sliding windows with smooth operation and durable aluminum framing.", "/images/window.jpg"],
+        ["Jalousie Windows", "Adjustable glass-louver windows designed for generous, controllable airflow in tropical spaces.", "/images/hero-small1.jpg"],
+        ["Fixed Windows", "Non-opening picture windows that maximize daylight and clear views with a clean, secure finish.", "/images/window.jpg"],
+        ["Folding Windows", "Multi-panel window systems that fold neatly aside to create a wide, flexible opening.", "/images/hero-main.jpg"],
+      ]),
     },
     {
       id: createId(),
-      title: "Door Installations",
-      desc: "Glass & aluminum doors—frameless, swing, sliding, and folding types for residential and commercial spaces.",
-      points: ["Pivot / Swing / Sliding", "Soft-Close Hardware", "Weather-sealed Performance"],
+      title: "Doors By Type",
+      desc: "Premium glass and aluminum door systems engineered for smooth operation, modern styling, and lasting durability.",
+      points: ["Bi-Fold Doors", "Sliding Doors", "Casement/Swing Doors", "Roll-Up Doors", "Hanging Doors"],
       icon: "door",
-      media: { id: createId(), type: "image", src: "/images/door.jpg", alt: "Glass door installation" },
+      media: { id: createId(), type: "image", src: "/images/door.jpg", alt: "Glass and aluminum door systems" },
+      products: createProducts([
+        ["Bi-Fold Doors", "Connected door panels that fold and stack to open rooms to patios, gardens, or commercial spaces.", "/images/door.jpg"],
+        ["Sliding Doors", "Smooth-gliding glass and aluminum doors that save floor space and bring in expansive natural light.", "/images/hero-main.jpg"],
+        ["Casement/Swing Doors", "Hinged entry doors built to suit residential and commercial openings with dependable hardware.", "/images/door.jpg"],
+        ["Roll-Up Doors", "Compact vertical-opening doors for storefronts, service areas, garages, and secure commercial access.", "/images/commercial.jpg"],
+        ["Hanging Doors", "Top-hung door systems with clean floor lines and smooth movement for contemporary interiors.", "/images/door.jpg"],
+      ]),
+    },
+    {
+      id: createId(),
+      title: "Others By Type",
+      desc: "Specialized architectural glass, metalwork, and exterior solutions for homes and commercial properties.",
+      points: ["Skylight", "Glass Railings", "Sunroom", "Stainless Steel Works", "ACP Cladding & Others"],
+      icon: "glass",
+      media: { id: createId(), type: "image", src: "/images/commercial.jpg", alt: "Architectural glass and metalwork" },
+      products: createProducts([
+        ["Skylight", "Custom overhead glazing that introduces daylight while accounting for drainage, sealing, and structural support.", "/images/hero-main.jpg"],
+        ["Glass Railings", "Clear tempered-glass railing systems for balconies, stairs, decks, and modern interior spaces.", "/images/shower.jpg"],
+        ["Sunroom", "Bright enclosed living spaces made with coordinated glass and aluminum systems for year-round enjoyment.", "/images/hero-main.jpg"],
+        ["Stainless Steel Works", "Custom stainless-steel railings, frames, supports, and architectural details made for long service life.", "/images/showroom.jpg"],
+        ["ACP Cladding & Others", "Aluminum composite panel cladding and tailored architectural finishing for clean, durable facades.", "/images/commercial.jpg"],
+      ]),
     },
   ],
   projects: [
