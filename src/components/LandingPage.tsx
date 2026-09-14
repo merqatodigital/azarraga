@@ -601,7 +601,7 @@ export default function App() {
                 <p className="mt-3 text-[12px] text-slate-500">{site.hero.serviceArea}</p>
               </div>
 
-              <div className="mx-auto w-full max-w-[620px]">
+              <div className="relative mx-auto w-full max-w-[620px] px-2 py-3 sm:px-4 md:px-5 md:py-5">
                 <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[20px] bg-slate-100 shadow-2xl shadow-slate-900/10 md:rounded-[24px]">
                   {heroMain ? (
                     <MediaDisplay media={heroMain} className="block h-full w-full object-cover object-center" autoPlay />
@@ -610,13 +610,14 @@ export default function App() {
                   )}
                 </div>
 
-                {site.hero.media.length > 1 && (
-                  <div className="mt-3 grid grid-cols-2 gap-3 md:mt-4 md:gap-4">
-                    {site.hero.media.slice(1, 3).map((media) => (
-                      <div key={media.id} className="aspect-[16/10] overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm md:rounded-2xl">
-                        <MediaDisplay media={media} className="block h-full w-full object-cover object-center" autoPlay />
-                      </div>
-                    ))}
+                {heroSecondary && (
+                  <div className="absolute right-0 top-0 aspect-[4/3] w-[29%] overflow-hidden rounded-xl border-[3px] border-white bg-slate-100 shadow-xl sm:w-[30%] md:rounded-2xl md:border-4">
+                    <MediaDisplay media={heroSecondary} className="block h-full w-full object-cover object-center" autoPlay />
+                  </div>
+                )}
+                {heroTertiary && (
+                  <div className="absolute bottom-0 right-1 aspect-square w-[27%] overflow-hidden rounded-xl border-[3px] border-white bg-slate-100 shadow-xl sm:right-0 sm:w-[28%] md:rounded-2xl md:border-4">
+                    <MediaDisplay media={heroTertiary} className="block h-full w-full object-cover object-center" autoPlay />
                   </div>
                 )}
               </div>
