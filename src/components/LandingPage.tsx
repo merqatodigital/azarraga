@@ -2541,10 +2541,68 @@ function loadSiteData(): SiteData {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return defaultSiteData;
     const parsed = JSON.parse(raw);
-    return deepMerge(defaultSiteData, parsed);
+    return migrateSiteData(parsed, defaultSiteData);
   } catch {
     return defaultSiteData;
   }
+}
+
+function migrateSiteData(saved: unknown, fallback: SiteData): SiteData {
+  const merged = deepMerge(fallback, saved);
+  if (!isObject(saved) || saved.serviceCatalogVersion === 2) {
+    return {
+      ...merged,
+      serviceCatalogVersion: 2,
+      services: merged.services.map(normalizeService),
+    };
+  }
+
+  const legacyServices = Array.isArray(saved.services) ? saved.services.filter(isObject) : [];
+  return {
+    ...merged,
+    serviceCatalogVersion: 2,
+    services: defaultSiteData.services.map((group, index) => {
+      const legacy = legacyServices[index];
+      const legacyMedia = legacy && isMediaItem(legacy.media) ? legacy.media : group.media;
+      return { ...group, media: legacyMedia, products: group.products.map((product) => ({ ...product, media: [...product.media] })) };
+    }),
+  };
+}
+
+function normalizeService(value: ServiceCard): ServiceCard {
+  const products = Array.isArray(value.products)
+    ? value.products.filter(isObject).map((product) => ({
+        id: typeof product.id === "string" ? product.id : createId(),
+        name: typeof product.name === "string" ? product.name : "Untitled Product",
+        description: typeof product.description === "string" ? product.description : "",
+        media: Array.isArray(product.media) ? product.media.filter(isMediaItem) : [],
+      }))
+    : [];
+  return { ...value, products };
+}
+
+function isMediaItem(value: unknown): value is MediaItem {
+  return isObject(value) && typeof value.id === "string" && typeof value.src === "string" && typeof value.alt === "string" && (value.type === "image" || value.type === "video");
+}
+
+function updateProduct(site: SiteData, serviceId: string, productId: string, update: (product: ServiceProduct) => ServiceProduct): SiteData {
+  return {
+    ...site,
+    services: site.services.map((service) =>
+      service.id === serviceId
+        ? { ...service, products: service.products.map((product) => (product.id === productId ? update(product) : product)) }
+        : service,
+    ),
+  };
+}
+
+function createProducts(entries: Array<[string, string, string]>): ServiceProduct[] {
+  return entries.map(([name, description, src]) => ({
+    id: createId(),
+    name,
+    description,
+    media: [{ id: createId(), type: "image", src, alt: name }],
+  }));
 }
 
 function deepMerge<T>(base: T, override: unknown): T {
