@@ -451,6 +451,7 @@ export default function App() {
   const [site, setSite] = useState<SiteData>(defaultSiteData);
   const [selectedProduct, setSelectedProduct] = useState<{ group: ServiceCard; product: ServiceProduct } | null>(null);
   const [selectedProductImage, setSelectedProductImage] = useState(0);
+  const [selectedSubProductId, setSelectedSubProductId] = useState<string | null>(null);
   const [adminOpen, setAdminOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [passkey, setPasskey] = useState("");
