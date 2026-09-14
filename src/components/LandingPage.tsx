@@ -601,31 +601,20 @@ export default function App() {
                 <p className="mt-3 text-[12px] text-slate-500">{site.hero.serviceArea}</p>
               </div>
 
-              <div className="relative">
-                <div className="relative mx-auto aspect-[4/3] w-full max-w-[620px] overflow-hidden rounded-[24px] shadow-2xl shadow-slate-900/10">
+              <div className="mx-auto w-full max-w-[620px]">
+                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[20px] bg-slate-100 shadow-2xl shadow-slate-900/10 md:rounded-[24px]">
                   {heroMain ? (
-                    <MediaDisplay media={heroMain} className="h-full w-full object-cover" autoPlay />
+                    <MediaDisplay media={heroMain} className="block h-full w-full object-cover object-center" autoPlay />
                   ) : (
                     <div className="grid h-full w-full place-items-center bg-slate-100 text-slate-400">Add hero media in Admin</div>
                   )}
                 </div>
 
-                {heroSecondary && (
-                  <div className="hidden md:block absolute -right-6 -top-6 w-[180px] overflow-hidden rounded-2xl border-4 border-white shadow-xl">
-                    <MediaDisplay media={heroSecondary} className="h-[130px] w-full object-cover" autoPlay />
-                  </div>
-                )}
-                {heroTertiary && (
-                  <div className="hidden md:block absolute -right-4 bottom-6 w-[170px] overflow-hidden rounded-2xl border-4 border-white shadow-xl">
-                    <MediaDisplay media={heroTertiary} className="h-[160px] w-full object-cover" autoPlay />
-                  </div>
-                )}
-
                 {site.hero.media.length > 1 && (
-                  <div className="mt-4 grid grid-cols-2 gap-3 md:hidden">
+                  <div className="mt-3 grid grid-cols-2 gap-3 md:mt-4 md:gap-4">
                     {site.hero.media.slice(1, 3).map((media) => (
-                      <div key={media.id} className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-                        <MediaDisplay media={media} className="h-32 w-full object-cover" autoPlay />
+                      <div key={media.id} className="aspect-[16/10] overflow-hidden rounded-xl border border-slate-100 bg-white shadow-sm md:rounded-2xl">
+                        <MediaDisplay media={media} className="block h-full w-full object-cover object-center" autoPlay />
                       </div>
                     ))}
                   </div>
