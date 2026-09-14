@@ -405,7 +405,7 @@ const defaultSiteData: SiteData = {
 };
 
 export default function App() {
-  const [site, setSite] = useState<SiteData>(() => loadSiteData());
+  const [site, setSite] = useState<SiteData>(defaultSiteData);
   const [selectedProduct, setSelectedProduct] = useState<{ group: ServiceCard; product: ServiceProduct } | null>(null);
   const [selectedProductImage, setSelectedProductImage] = useState(0);
   const [adminOpen, setAdminOpen] = useState(false);
@@ -419,6 +419,7 @@ export default function App() {
   // Load saved content from the cloud on mount
   useEffect(() => {
     let cancelled = false;
+    setSite(loadSiteData());
     getSiteContent()
       .then(({ data }) => {
         if (cancelled || !data) return;
@@ -441,9 +442,10 @@ export default function App() {
       return;
     }
     if (!isAdmin || !currentPasskey) return;
+    const activePasskey = currentPasskey;
     setSaveStatus("saving");
     const handle = setTimeout(() => {
-      saveSiteContent({ data: { passkey: currentPasskey!, data: site as unknown as Record<string, unknown> } })
+      saveSiteContent({ data: { passkey: activePasskey, data: site as unknown as Record<string, unknown> } })
         .then(() => setSaveStatus("saved"))
         .catch((err) => {
           console.error("Failed to save site content:", err);
