@@ -11,4 +11,9 @@ export default defineConfig({
   tanstackStart: {
     server: { entry: "server" },
   },
+  vite: {
+    server: {
+      allowedHosts: [".e2b.app"],
+    },
+  },
 });
