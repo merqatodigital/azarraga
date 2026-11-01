@@ -1,7 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import LandingPage from "@/components/LandingPage";
+import { getSiteContent } from "@/lib/site-content.functions";
 
 export const Route = createFileRoute("/")({
+  loader: async () => {
+    try {
+      const { data } = await getSiteContent();
+      return { siteContent: data };
+    } catch (error) {
+      console.error("Could not preload website CMS content:", error);
+      return { siteContent: null };
+    }
+  },
   head: () => ({
     meta: [
       { title: "Glass & Aluminum Solutions | Azarraga Palawan" },
@@ -12,5 +22,10 @@ export const Route = createFileRoute("/")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: LandingPage,
+  component: LandingPageRoute,
 });
+
+function LandingPageRoute() {
+  const { siteContent } = Route.useLoaderData();
+  return <LandingPage initialSiteContent={siteContent} />;
+}

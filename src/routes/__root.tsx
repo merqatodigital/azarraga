@@ -9,6 +9,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useScrollMotion } from "@/hooks/use-scroll-motion";
 
 import appCss from "../styles.css?url";
 
@@ -121,6 +122,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  useScrollMotion();
   const { queryClient } = Route.useRouteContext();
   const [session, setSession] = useState<import("@supabase/supabase-js").Session | null>(null);
   const [user, setUser] = useState<import("@supabase/supabase-js").User | null>(null);

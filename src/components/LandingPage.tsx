@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties, type ChangeEvent, type FormEvent, type ReactNode } from "react";
+import { ArrowRight, ChevronLeft, ChevronRight, Pause, Play, Sparkles } from "lucide-react";
 import { getSiteContent, saveSiteContent, uploadSiteMedia } from "@/lib/site-content.functions";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -61,6 +62,8 @@ interface ServiceSubProduct {
   name: string;
   description: string;
   media: MediaItem[];
+  priceFrom: number | null;
+  priceUnit: string;
 }
 
 interface ServiceProduct {
@@ -69,6 +72,8 @@ interface ServiceProduct {
   description: string;
   media: MediaItem[];
   subProducts: ServiceSubProduct[];
+  priceFrom: number | null;
+  priceUnit: string;
 }
 
 
@@ -86,7 +91,11 @@ interface ProjectCard {
   id: string;
   name: string;
   ctaLabel: string;
+  category?: string;
+  location?: string;
+  description?: string;
   media: MediaItem;
+  gallery?: MediaItem[];
 }
 
 interface ProcessStep {
@@ -137,6 +146,9 @@ interface SiteData {
     cards: AboutCard[];
   };
   services: ServiceCard[];
+  projectsTitle: string;
+  projectsEyebrow: string;
+  projectsSubtitle: string;
   projects: ProjectCard[];
   process: ProcessStep[];
   promo: {
@@ -149,6 +161,16 @@ interface SiteData {
     title: string;
     subtitle: string;
     services: string[];
+  };
+  quotePage: {
+    formTitle: string;
+    formIntro: string;
+    attachmentHelp: string;
+    privacyNote: string;
+    submitLabel: string;
+    projectTypes: string[];
+    timelines: string[];
+    budgetRanges: string[];
   };
   contact: {
     phone: string;
@@ -189,7 +211,7 @@ const iconOptions: IconName[] = [
 ];
 
 const defaultSiteData: SiteData = {
-  serviceCatalogVersion: 3,
+  serviceCatalogVersion: 4,
   theme: {
     primary: "#0b3b8f",
     primaryDark: "#082f73",
@@ -296,7 +318,11 @@ const defaultSiteData: SiteData = {
           ["Frameless Fixed", "Minimal frameless fixed glazing for the cleanest possible sightlines.", "/images/hero-main.jpg"],
           ["Awning/High-End Fixed", "Premium fixed glazing that pairs with awning sashes for combined light and ventilation.", "/images/window.jpg"],
         ]],
-        ["Folding Windows", "Multi-panel window systems that fold neatly aside to create a wide, flexible opening.", "/images/hero-main.jpg"],
+        ["Folding Windows", "Multi-panel window systems that fold neatly aside to create a wide, flexible opening. Panel count, track configuration, glass, and opening direction are selected to suit the site.", "/images/hero-main.jpg", [
+          ["2-Panel Folding Window", "A compact folding configuration for smaller openings where a clear, wide opening is still desired.", "/images/window.jpg"],
+          ["3-Panel Folding Window", "Three linked panels that stack to one side for a larger ventilation opening.", "/images/hero-small1.jpg"],
+          ["Multi-Panel Folding Window", "Made-to-measure multi-panel arrangement for wide residential and hospitality openings.", "/images/hero-main.jpg"],
+        ]],
 
       ]),
     },
@@ -308,9 +334,24 @@ const defaultSiteData: SiteData = {
       icon: "door",
       media: { id: createId(), type: "image", src: "/images/door.jpg", alt: "Glass and aluminum door systems" },
       products: createProducts([
-        ["Bi-Fold Doors", "Connected door panels that fold and stack to open rooms to patios, gardens, or commercial spaces.", "/images/door.jpg"],
-        ["Sliding Doors", "Smooth-gliding glass and aluminum doors that save floor space and bring in expansive natural light.", "/images/hero-main.jpg"],
-        ["Casement/Swing Doors", "Hinged entry doors built to suit residential and commercial openings with dependable hardware.", "/images/door.jpg"],
+        ["Bi-Fold Doors", "Connected door panels fold and stack to open rooms to patios, gardens, or commercial spaces. Panel count, stacking direction, threshold, safety glass, and hardware are specified for each opening.", "/images/door.jpg", [
+          ["2-Panel Bi-Fold Door", "Two linked panels for compact patio, balcony, or room openings.", "/images/door.jpg"],
+          ["3-Panel Bi-Fold Door", "Three-panel arrangement for a wider clear opening with panels stacking to one side.", "/images/door.jpg"],
+          ["Multi-Panel Bi-Fold Door", "Made-to-measure folding wall for wide resort, residential, and commercial openings.", "/images/hero-main.jpg"],
+          ["Bi-Fold Door with Screen", "Folding glass door paired with a compatible insect screen for tropical indoor-outdoor living.", "/images/door.jpg"],
+        ]],
+        ["Sliding Doors", "Smooth-gliding glass and aluminum doors that save floor space and bring in expansive natural light. We configure panel count, track, screen, glass, and lock to the opening.", "/images/hero-main.jpg", [
+          ["2-Panel Sliding Door", "A practical two-panel system for patios, balconies, and residential entrances.", "/images/door.jpg"],
+          ["3-Panel / 3-Track Sliding Door", "Multi-track arrangement that allows a larger portion of the opening to slide clear.", "/images/hero-main.jpg"],
+          ["Heavy-Duty Sliding Door", "Reinforced profiles and heavy-duty rollers for larger panels and frequent use.", "/images/door.jpg"],
+          ["Sliding Door with Screen", "Glass sliding panels with a separate insect-screen track for ventilation.", "/images/door.jpg"],
+        ]],
+        ["Casement/Swing Doors", "Hinged entry doors built to suit residential and commercial openings with dependable hardware. Available as single or paired leaves, framed or glass-forward designs.", "/images/door.jpg", [
+          ["Single Swing Door", "Single-leaf hinged door for entries, rooms, and service spaces.", "/images/door.jpg"],
+          ["Double Swing Door", "Paired hinged leaves for wider entrances and commercial circulation.", "/images/commercial.jpg"],
+          ["Frameless Glass Swing Door", "Tempered glass door with suitable patch fittings and handles for a clean storefront or interior look.", "/images/showroom.jpg"],
+          ["Aluminum Panel Swing Door", "Aluminum-framed door configuration with glazing or panel infill selected for privacy and use.", "/images/door.jpg"],
+        ]],
         ["Roll-Up Doors", "Compact vertical-opening doors for storefronts, service areas, garages, and secure commercial access.", "/images/commercial.jpg", [
           ["Polycarbonate Roll Up", "Translucent polycarbonate slats that keep storefronts secure while letting daylight through.", "/images/commercial.jpg"],
           ["Security Grill Roll Up", "Open grill shutter that secures the opening while keeping the display visible and ventilated.", "/images/commercial.jpg"],
@@ -333,49 +374,98 @@ const defaultSiteData: SiteData = {
       icon: "glass",
       media: { id: createId(), type: "image", src: "/images/commercial.jpg", alt: "Architectural glass and metalwork" },
       products: createProducts([
-        ["Skylight", "Custom overhead glazing that introduces daylight while accounting for drainage, sealing, and structural support.", "/images/hero-main.jpg"],
-        ["Glass Railings", "Clear tempered-glass railing systems for balconies, stairs, decks, and modern interior spaces.", "/images/shower.jpg"],
-        ["Sunroom", "Bright enclosed living spaces made with coordinated glass and aluminum systems for year-round enjoyment.", "/images/hero-main.jpg"],
-        ["Stainless Steel Works", "Custom stainless-steel railings, frames, supports, and architectural details made for long service life.", "/images/showroom.jpg"],
-        ["ACP Cladding & Others", "Aluminum composite panel cladding and tailored architectural finishing for clean, durable facades.", "/images/commercial.jpg"],
+        ["Skylight", "Custom overhead glazing that introduces daylight. Every skylight is planned around roof pitch, drainage, waterproofing, safety glass, and structural support.", "/images/hero-main.jpg", [
+          ["Fixed Skylight", "Non-opening glazed roof panel with an engineered frame and weather-sealed perimeter.", "/images/hero-main.jpg"],
+          ["Operable Skylight", "Ventilating skylight configuration, subject to roof condition, access, and suitable operating hardware.", "/images/hero-small1.jpg"],
+          ["Canopy / Glass Awning", "Overhead glass canopy for entrances and walkways, with support and drainage designed for the site.", "/images/commercial.jpg"],
+        ]],
+        ["Glass Railings", "Clear safety-glass railing systems for balconies, stairs, decks, and modern interiors. Glass thickness, edge finish, fixing method, and site conditions are confirmed before quotation.", "/images/shower.jpg", [
+          ["Top-Rail Glass Railing", "Glass panels secured with a continuous top rail for a defined handhold and clean finish.", "/images/shower.jpg"],
+          ["Frameless Glass Railing", "Minimal-look railing using suitable clamps, base shoes, or point fixings as engineered for the location.", "/images/hero-main.jpg"],
+          ["Stair Glass Railing", "Custom angled glass panels and handrail details measured to the stair profile.", "/images/showroom.jpg"],
+          ["Balcony Glass Railing", "Exterior railing package for balconies and decks, with fixing details selected for exposure and substrate.", "/images/residential.jpg"],
+        ]],
+        ["Sunroom", "Bright enclosed living spaces made with coordinated glass and aluminum systems. Layout, ventilation, shading, roof, and weather-sealing details are planned around the property.", "/images/hero-main.jpg", [
+          ["Glass-Enclosed Sunroom", "A glazed enclosure designed to extend living or dining areas with outdoor views.", "/images/hero-main.jpg"],
+          ["Sunroom with Sliding Panels", "Ventilated enclosure using sliding panels to control airflow and access.", "/images/residential.jpg"],
+          ["Sunroom Roof & Wall Package", "Coordinated roof and wall glazing with site-specific structural and waterproofing review.", "/images/commercial.jpg"],
+        ]],
+        ["Stainless Steel Works", "Custom stainless-steel railings, frames, supports, and architectural details made for long service life. Grade, finish, dimensions, and installation conditions are confirmed per project.", "/images/showroom.jpg", [
+          ["Stainless Steel Handrails", "Custom fabricated handrails for stairs, ramps, and balconies.", "/images/showroom.jpg"],
+          ["Stainless Steel Railings", "Balustrade and guardrail fabrication with glass or metal infill options.", "/images/residential.jpg"],
+          ["Custom Stainless Fabrication", "Brackets, frames, supports, and architectural metalwork made to approved measurements.", "/images/commercial.jpg"],
+        ]],
+        ["ACP Cladding & Others", "Aluminum composite panel cladding and tailored architectural finishing for clean, durable facades. Panel finish, subframe, edge details, and access requirements affect project pricing.", "/images/commercial.jpg", [
+          ["ACP Facade Cladding", "Exterior aluminum composite panel facade with coordinated trims and support framing.", "/images/commercial.jpg"],
+          ["ACP Signage / Feature Panels", "Decorative or branded panel feature for storefronts and building exteriors.", "/images/showroom.jpg"],
+          ["Storefront & Glass Facade", "Shopfront glazing and aluminum framing for retail and commercial entrances.", "/images/commercial.jpg"],
+          ["Shower Enclosures", "Framed, semi-frameless, or frameless glass shower enclosures, measured to suit the bathroom.", "/images/shower.jpg"],
+        ]],
       ]),
     },
   ],
+  projectsTitle: "Recent Projects",
+  projectsEyebrow: "OUR WORK",
+  projectsSubtitle: "Real installations and spaces shaped with glass and aluminum solutions across Palawan.",
   projects: [
     {
       id: createId(),
       name: "Beachfront Villa",
-      ctaLabel: "View Project",
+      ctaLabel: "Explore Project",
+      category: "Residential",
+      location: "",
+      description: "",
+      gallery: [],
       media: { id: createId(), type: "image", src: "/images/hero-main.jpg", alt: "Beachfront villa" },
     },
     {
       id: createId(),
       name: "Cafe Shofrant",
-      ctaLabel: "View Project",
+      ctaLabel: "Explore Project",
+      category: "Hospitality",
+      location: "",
+      description: "",
+      gallery: [],
       media: { id: createId(), type: "image", src: "/images/cafe.jpg", alt: "Cafe storefront" },
     },
     {
       id: createId(),
       name: "Ribera Casaments",
-      ctaLabel: "View Project",
+      ctaLabel: "Explore Project",
+      category: "Residential",
+      location: "",
+      description: "",
+      gallery: [],
       media: { id: createId(), type: "image", src: "/images/residential.jpg", alt: "Residential project" },
     },
     {
       id: createId(),
       name: "Nissan Showroom",
-      ctaLabel: "View Project",
+      ctaLabel: "Explore Project",
+      category: "Commercial",
+      location: "",
+      description: "",
+      gallery: [],
       media: { id: createId(), type: "image", src: "/images/showroom.jpg", alt: "Showroom project" },
     },
     {
       id: createId(),
       name: "Puro Stores",
-      ctaLabel: "View Project",
+      ctaLabel: "Explore Project",
+      category: "Commercial",
+      location: "",
+      description: "",
+      gallery: [],
       media: { id: createId(), type: "image", src: "/images/commercial.jpg", alt: "Commercial store project" },
     },
     {
       id: createId(),
       name: "Rural Entry",
-      ctaLabel: "View Project",
+      ctaLabel: "Explore Project",
+      category: "Residential",
+      location: "",
+      description: "",
+      gallery: [],
       media: { id: createId(), type: "image", src: "/images/hero-small1.jpg", alt: "Entry project" },
     },
   ],
@@ -426,6 +516,16 @@ const defaultSiteData: SiteData = {
       "Railings",
     ],
   },
+  quotePage: {
+    formTitle: "Tell us what you need",
+    formIntro: "Share a few project details so our team can prepare the right next step.",
+    attachmentHelp: "Add a sketch, site photo, plan, or reference image to help us understand your project.",
+    privacyNote: "Your information is used only to respond to this enquiry and prepare your quotation.",
+    submitLabel: "Send my quote request",
+    projectTypes: ["New construction", "Renovation or replacement", "Commercial fit-out", "Resort or hospitality", "Other"],
+    timelines: ["As soon as possible", "Within 1–3 months", "Within 3–6 months", "Planning / no fixed date"],
+    budgetRanges: ["Under ₱50,000", "₱50,000–₱150,000", "₱150,000–₱500,000", "Over ₱500,000", "Not sure yet"],
+  },
   contact: {
     phone: "0945 130 8277",
     email: "info@azarragaglass.com",
@@ -447,39 +547,81 @@ const defaultSiteData: SiteData = {
   },
 };
 
-export default function App() {
-  const [site, setSite] = useState<SiteData>(defaultSiteData);
+export default function App({ initialSiteContent }: { initialSiteContent?: unknown }) {
+  const [site, setSite] = useState<SiteData>(() => initialSiteContent != null ? migrateSiteData(initialSiteContent, defaultSiteData) : defaultSiteData);
+  const [siteContentReady, setSiteContentReady] = useState(initialSiteContent != null);
+  const [heroSlideIndex, setHeroSlideIndex] = useState(0);
+  const [heroHighlightIndex, setHeroHighlightIndex] = useState(0);
+  const [heroCarouselPlaying, setHeroCarouselPlaying] = useState(true);
+  const [trustCarouselPaused, setTrustCarouselPaused] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<{ group: ServiceCard; product: ServiceProduct } | null>(null);
   const [selectedProductImage, setSelectedProductImage] = useState(0);
   const [selectedSubProductId, setSelectedSubProductId] = useState<string | null>(null);
+  const [flippedProducts, setFlippedProducts] = useState<Record<string, boolean>>({});
+  const [flippedProjects, setFlippedProjects] = useState<Record<string, boolean>>({});
+  const [selectedProjectCategory, setSelectedProjectCategory] = useState("All");
+  const [selectedProject, setSelectedProject] = useState<ProjectCard | null>(null);
+  const [selectedProjectImage, setSelectedProjectImage] = useState(0);
+  const [estimate, setEstimate] = useState({ width: "1", height: "1", quantity: "1" });
   const [adminOpen, setAdminOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [passkey, setPasskey] = useState("");
   const [authError, setAuthError] = useState("");
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const hydratedRef = useRef(false);
   const initialLoadRef = useRef(true);
 
-  // Load saved content from the cloud on mount
+  // Resolve the CMS content before showing the public page, so a reload never
+  // flashes default/raw content before the saved cloud version is applied.
   useEffect(() => {
     let cancelled = false;
-    setSite(loadSiteData());
-    getSiteContent()
+    if (initialSiteContent != null) {
+      setSite(migrateSiteData(initialSiteContent, defaultSiteData));
+      setSiteContentReady(true);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const localSnapshot = loadSiteData();
+    const timeout = new Promise<{ data: null }>((resolve) => {
+      window.setTimeout(() => resolve({ data: null }), 5000);
+    });
+
+    Promise.race([getSiteContent(), timeout])
       .then(({ data }) => {
-        if (cancelled || !data) return;
-        setSite((current) => migrateSiteData(data, current));
+        if (cancelled) return;
+        setSite(data != null ? migrateSiteData(data, localSnapshot) : localSnapshot);
       })
-      .catch((err) => console.error("Failed to load site content:", err))
+      .catch((err) => {
+        console.error("Failed to load site content; using the saved local copy:", err);
+        if (!cancelled) setSite(localSnapshot);
+      })
       .finally(() => {
-        hydratedRef.current = true;
+        if (!cancelled) setSiteContentReady(true);
       });
+
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [initialSiteContent]);
+
+  useEffect(() => {
+    const slideCount = site.hero.media.length;
+    if (!heroCarouselPlaying || slideCount < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setInterval(() => setHeroSlideIndex((index) => (index + 1) % slideCount), 5200);
+    return () => window.clearInterval(timer);
+  }, [site.hero.media.length, heroCarouselPlaying]);
+
+  useEffect(() => {
+    const highlightCount = site.trustItems.length;
+    if (!heroCarouselPlaying || highlightCount < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setInterval(() => setHeroHighlightIndex((index) => (index + 1) % highlightCount), 3900);
+    return () => window.clearInterval(timer);
+  }, [site.trustItems.length, heroCarouselPlaying]);
 
   // Keep a local cache + debounce-save to the cloud while signed in as admin
   useEffect(() => {
+    if (!siteContentReady) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(site));
     if (initialLoadRef.current) {
       initialLoadRef.current = false;
@@ -491,13 +633,13 @@ export default function App() {
     const handle = setTimeout(() => {
       saveSiteContent({ data: { passkey: activePasskey, data: site as unknown as Record<string, unknown> } })
         .then(() => setSaveStatus("saved"))
-        .catch((err) => {
+        .catch((err: unknown) => {
           console.error("Failed to save site content:", err);
           setSaveStatus("error");
         });
     }, 800);
     return () => clearTimeout(handle);
-  }, [site, isAdmin]);
+  }, [site, isAdmin, siteContentReady]);
 
   const themeVars = useMemo(
     () =>
@@ -515,9 +657,30 @@ export default function App() {
     [site.theme],
   );
 
-  const heroMain = site.hero.media[0];
-  const heroSecondary = site.hero.media[1];
-  const heroTertiary = site.hero.media[2];
+  const heroMedia = site.hero.media;
+  const heroSlide = heroMedia.length ? heroSlideIndex % heroMedia.length : 0;
+  const heroMain = heroMedia[heroSlide];
+  const heroSecondary = heroMedia.length > 1 ? heroMedia[(heroSlide + 1) % heroMedia.length] : undefined;
+  const heroTertiary = heroMedia.length > 2 ? heroMedia[(heroSlide + 2) % heroMedia.length] : undefined;
+  const heroHighlight = site.trustItems.length ? site.trustItems[heroHighlightIndex % site.trustItems.length] : "";
+  const projectCategories = useMemo(
+    () => Array.from(new Set(site.projects.map((project) => project.category?.trim()).filter((category): category is string => Boolean(category)))),
+    [site.projects],
+  );
+  const visibleProjects = selectedProjectCategory === "All"
+    ? site.projects
+    : site.projects.filter((project) => project.category?.trim() === selectedProjectCategory);
+  const selectedProjectMedia = selectedProject
+    ? [
+        { ...selectedProject.media, src: selectedProject.media?.src || getProjectFallbackImage(selectedProject.category) },
+        ...(selectedProject.gallery ?? []).filter((media) => media?.src),
+      ]
+    : [];
+
+  const openProject = (project: ProjectCard) => {
+    setSelectedProject(project);
+    setSelectedProjectImage(0);
+  };
 
   const openAdmin = () => {
     setAdminOpen(true);
@@ -550,22 +713,46 @@ export default function App() {
     setSelectedProduct({ group, product });
     setSelectedProductImage(0);
     setSelectedSubProductId(null);
+    setEstimate({ width: "1", height: "1", quantity: "1" });
   };
 
   const openSubProduct = (id: string | null) => {
     setSelectedSubProductId(id);
     setSelectedProductImage(0);
+    setEstimate({ width: "1", height: "1", quantity: "1" });
   };
 
   const activeSubProduct = selectedProduct?.product.subProducts?.find((sub) => sub.id === selectedSubProductId) ?? null;
   const activeDetail = activeSubProduct ?? selectedProduct?.product ?? null;
+
+  const moveHeroCarousel = (direction: number) => {
+    if (heroMedia.length > 0) setHeroSlideIndex((index) => (index + direction + heroMedia.length) % heroMedia.length);
+    if (site.trustItems.length > 0) setHeroHighlightIndex((index) => (index + direction + site.trustItems.length) % site.trustItems.length);
+  };
+
+  const selectHeroSlide = (index: number) => {
+    setHeroSlideIndex(index);
+    if (site.trustItems.length > 0) setHeroHighlightIndex(index % site.trustItems.length);
+  };
+
+  if (!siteContentReady) {
+    return (
+      <main className="site-content-loading" aria-busy="true" aria-label="Loading the latest website content">
+        <div className="site-content-loading-card">
+          <img src="/images/logo.png" alt="Azarraga Glass & Aluminum" />
+          <span className="site-content-loading-bar" aria-hidden="true"><span /></span>
+          <p>Loading the latest project portfolio…</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <div
       className="min-h-screen overflow-x-hidden antialiased"
       style={{ ...themeVars, backgroundColor: site.theme.surfaceAlt, color: site.theme.text, fontFamily: site.theme.bodyFont }}
     >
-      <header className="sticky top-0 z-40 px-3 pt-3 md:px-6">
+      <header data-motion-header className="sticky top-0 z-40 px-3 pt-3 md:px-6">
         <div className="mx-auto max-w-[1400px]">
           <div className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-white/95 px-4 py-3 shadow-[0_8px_30px_rgba(2,6,23,0.06)] backdrop-blur-xl md:px-6">
             <div className="flex min-w-0 items-center gap-3">
@@ -596,7 +783,7 @@ export default function App() {
         </div>
       </header>
 
-      <section className="relative">
+      <section className="relative" data-motion-hero>
         <div className="mx-auto max-w-[1400px] px-3 md:px-6">
           <div className="relative mt-3 overflow-hidden rounded-[28px] bg-white">
             <div className="absolute inset-0">
@@ -606,12 +793,15 @@ export default function App() {
             <div className="relative grid items-center gap-8 px-6 py-10 md:px-10 md:py-14 lg:grid-cols-2 lg:gap-12 lg:py-16">
               <div>
                 <div
+                  data-hero-step="1"
                   className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[11px] font-semibold uppercase tracking-wide"
                   style={{ backgroundColor: site.theme.accent, color: site.theme.primary, borderColor: "#dbeafe" }}
                 >
+                  <span className="hero-badge-sparkle"><Sparkles size={12} aria-hidden="true" /></span>
                   {site.hero.badge}
                 </div>
                 <h1
+                  data-hero-step="2"
                   className="mt-4 text-[32px] font-bold leading-[1.08] tracking-tight text-slate-900 md:text-[44px] lg:text-[52px]"
                   style={{ fontFamily: site.theme.headingFont }}
                 >
@@ -619,29 +809,54 @@ export default function App() {
                   <br />
                   <span style={{ color: site.theme.primary }}>{site.hero.titleB}</span>
                 </h1>
-                <p className="mt-4 max-w-[520px] text-[14px] leading-relaxed text-slate-600 md:text-[15px]">{site.hero.description}</p>
+                <p data-hero-step="3" className="mt-4 max-w-[520px] text-[14px] leading-relaxed text-slate-600 md:text-[15px]">{site.hero.description}</p>
 
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <div data-hero-step="4" className="mt-6 flex flex-col gap-3 sm:flex-row">
                   <a
                     href="#quote"
-                    className="inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-[14px] font-semibold text-white shadow-md transition hover:opacity-95"
-                    style={{ backgroundColor: site.theme.primary }}
+                    className="hero-cta-primary group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl px-6 py-3.5 text-[14px] font-bold text-white shadow-lg transition duration-300 hover:-translate-y-1 hover:shadow-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700"
+                    style={{ backgroundImage: `linear-gradient(135deg, ${site.theme.primary}, ${site.theme.primaryDark})` }}
                   >
-                    {site.hero.primaryCta}
-                    <Icon name="check" size={16} className="-rotate-90" />
+                    <span className="hero-cta-shine" aria-hidden="true" />
+                    <span className="relative z-10">{site.hero.primaryCta}</span>
+                    <ArrowRight size={17} className="relative z-10 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
                   </a>
                   <a
                     href="#services"
-                    className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-5 py-3 text-[14px] font-semibold text-slate-700 transition hover:bg-slate-50"
+                    className="hero-cta-secondary group inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white/90 px-5 py-3.5 text-[14px] font-semibold text-slate-700 shadow-sm backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-blue-200 hover:bg-white hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-700"
                   >
                     {site.hero.secondaryCta}
+                    <ArrowRight size={15} className="transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
                   </a>
                 </div>
 
+                {site.trustItems.length > 0 && (
+                  <div data-hero-step="5" className="hero-highlight-card mt-5 flex max-w-[520px] items-center gap-3 rounded-2xl border border-blue-100 bg-white/75 p-3 shadow-[0_10px_30px_rgba(15,55,120,0.08)] backdrop-blur-md sm:p-3.5">
+                    <div className="hero-highlight-icon grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-blue-50 text-blue-800">
+                      <Sparkles size={18} aria-hidden="true" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">The Azarraga difference</p>
+                      <p key={heroHighlightIndex} aria-live="polite" className="hero-highlight-text mt-0.5 truncate text-[13px] font-bold text-slate-900 sm:text-sm">{heroHighlight}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <button type="button" aria-label="Previous hero highlight and image" onClick={() => moveHeroCarousel(-1)} className="hero-carousel-control" disabled={heroMedia.length < 2}>
+                        <ChevronLeft size={15} aria-hidden="true" />
+                      </button>
+                      <button type="button" aria-label={heroCarouselPlaying ? "Pause hero carousel" : "Play hero carousel"} onClick={() => setHeroCarouselPlaying((playing) => !playing)} className="hero-carousel-control">
+                        {heroCarouselPlaying ? <Pause size={13} aria-hidden="true" /> : <Play size={13} aria-hidden="true" />}
+                      </button>
+                      <button type="button" aria-label="Next hero highlight and image" onClick={() => moveHeroCarousel(1)} className="hero-carousel-control" disabled={heroMedia.length < 2}>
+                        <ChevronRight size={15} aria-hidden="true" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {site.hero.stats.length > 0 && (
-                  <div className="mt-8 grid max-w-[520px] grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  <div data-hero-step="6" className="mt-5 grid max-w-[520px] grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                     {site.hero.stats.map((stat) => (
-                      <div key={stat.id} className="flex items-center gap-3 rounded-xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+                      <div key={stat.id} className="hero-stat-card flex items-center gap-3 rounded-xl border border-slate-100 bg-white px-4 py-3 shadow-sm transition duration-300 hover:-translate-y-1 hover:border-blue-100 hover:shadow-lg">
                         <div className="text-[var(--brand-primary)]">
                           <Icon name={stat.icon} size={22} />
                         </div>
@@ -653,49 +868,107 @@ export default function App() {
                     ))}
                   </div>
                 )}
-                <p className="mt-3 text-[12px] text-slate-500">{site.hero.serviceArea}</p>
+                <p data-hero-step="7" className="mt-3 text-[12px] text-slate-500">{site.hero.serviceArea}</p>
               </div>
 
-              <div className="relative mx-auto w-full max-w-[620px] px-2 py-3 sm:px-4 md:px-5 md:py-5">
-                <div className="relative aspect-[16/10] w-full overflow-hidden rounded-[20px] bg-slate-100 shadow-2xl shadow-slate-900/10 md:rounded-[24px]">
+              <div data-hero-visual className="hero-visual relative mx-auto w-full max-w-[620px] px-2 py-3 sm:px-4 md:px-5 md:py-5">
+                <div className="hero-carousel-frame relative aspect-[16/10] w-full overflow-hidden rounded-[20px] bg-slate-100 shadow-2xl shadow-slate-900/20 md:rounded-[24px]">
                   {heroMain ? (
-                    <MediaDisplay media={heroMain} className="block h-full w-full object-cover object-center" autoPlay />
+                    <div key={`${heroMain.id}-${heroSlide}`} className="hero-carousel-active absolute inset-0">
+                      <MediaDisplay media={heroMain} className="hero-carousel-photo block h-full w-full object-cover object-center" autoPlay />
+                    </div>
                   ) : (
                     <div className="grid h-full w-full place-items-center bg-slate-100 text-slate-400">Add hero media in Admin</div>
+                  )}
+                  <div className="hero-carousel-shade absolute inset-0" aria-hidden="true" />
+                  {heroMain && (
+                    <div className="absolute bottom-4 left-4 z-10 max-w-[58%] text-white sm:bottom-5 sm:left-5">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-slate-950/30 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[0.15em] backdrop-blur-md sm:text-[9px]">
+                        <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 shadow-[0_0_12px_rgba(103,232,249,0.9)]" />
+                        Azarraga · Palawan
+                      </span>
+                      <p className="mt-1.5 line-clamp-1 text-[11px] font-semibold drop-shadow sm:text-xs">{heroMain.alt}</p>
+                    </div>
+                  )}
+                  {heroMedia.length > 1 && (
+                    <div className="absolute bottom-5 right-[31%] z-10 flex items-center gap-1.5" aria-label={`Image ${heroSlide + 1} of ${heroMedia.length}`}>
+                      {heroMedia.map((media, index) => (
+                        <button
+                          key={media.id}
+                          type="button"
+                          aria-label={`Show hero image ${index + 1}: ${media.alt}`}
+                          aria-current={index === heroSlide ? "true" : undefined}
+                          onClick={() => selectHeroSlide(index)}
+                          className={`hero-slide-dot ${index === heroSlide ? "is-active" : ""}`}
+                        />
+                      ))}
+                    </div>
                   )}
                 </div>
 
                 {heroSecondary && (
-                  <div className="absolute right-0 top-0 aspect-[4/3] w-[29%] overflow-hidden rounded-xl border-[3px] border-white bg-slate-100 shadow-xl sm:w-[30%] md:rounded-2xl md:border-4">
+                  <button
+                    type="button"
+                    aria-label={`Show ${heroSecondary.alt} in the main hero image`}
+                    onClick={() => selectHeroSlide((heroSlide + 1) % heroMedia.length)}
+                    className="hero-floating-image hero-floating-image-top absolute right-0 top-0 z-20 aspect-[4/3] w-[29%] overflow-hidden rounded-xl border-[3px] border-white bg-slate-100 shadow-xl sm:w-[30%] md:rounded-2xl md:border-4"
+                  >
                     <MediaDisplay media={heroSecondary} className="block h-full w-full object-cover object-center" autoPlay />
-                  </div>
+                    <span className="hero-thumb-label">Preview next image</span>
+                  </button>
                 )}
                 {heroTertiary && (
-                  <div className="absolute bottom-0 right-1 aspect-square w-[27%] overflow-hidden rounded-xl border-[3px] border-white bg-slate-100 shadow-xl sm:right-0 sm:w-[28%] md:rounded-2xl md:border-4">
+                  <button
+                    type="button"
+                    aria-label={`Show ${heroTertiary.alt} in the main hero image`}
+                    onClick={() => selectHeroSlide((heroSlide + 2) % heroMedia.length)}
+                    className="hero-floating-image hero-floating-image-bottom absolute bottom-0 right-1 z-20 aspect-square w-[27%] overflow-hidden rounded-xl border-[3px] border-white bg-slate-100 shadow-xl sm:right-0 sm:w-[28%] md:rounded-2xl md:border-4"
+                  >
                     <MediaDisplay media={heroTertiary} className="block h-full w-full object-cover object-center" autoPlay />
-                  </div>
+                    <span className="hero-thumb-label">View image</span>
+                  </button>
                 )}
+                <div className="hero-orbit hero-orbit-one" aria-hidden="true" />
+                <div className="hero-orbit hero-orbit-two" aria-hidden="true" />
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-[1400px] px-6 py-4 md:px-10">
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[13px] font-medium text-slate-700">
-          {site.trustItems.map((item, index) => (
-            <div key={`${item}-${index}`} className="flex items-center gap-6">
-              {index > 0 && <span className="hidden h-4 w-px bg-slate-200 md:block" />}
-              <span className="inline-flex items-center gap-2">
-                <span className="grid h-5 w-5 place-items-center rounded-full text-[var(--brand-primary)]" style={{ backgroundColor: site.theme.accent }}>
-                  <Icon name="check" size={10} />
-                </span>
-                {item}
-              </span>
+      {site.trustItems.length > 0 && (
+        <section className="trust-carousel-section" aria-label="Azarraga service highlights">
+          <div className="trust-carousel-inner mx-auto flex max-w-[1400px] items-center gap-3 px-4 py-3 md:gap-5 md:px-10 md:py-4">
+            <div className="trust-carousel-label hidden shrink-0 items-center gap-3 sm:flex">
+              <span className="trust-label-icon" aria-hidden="true"><Sparkles size={17} /></span>
+              <span><strong>Azarraga standards</strong><small>Details that matter</small></span>
             </div>
-          ))}
-        </div>
-      </section>
+            <div className={`trust-marquee ${trustCarouselPaused ? "is-paused" : ""} ${site.trustItems.length > 1 ? "is-moving" : "is-static"}`}>
+              <div className="trust-marquee-track" style={{ "--trust-duration": `${Math.max(22, site.trustItems.length * 7)}s` } as CSSProperties}>
+                {(site.trustItems.length > 1 ? [0, 1] : [0]).map((copy) => (
+                  <div key={copy} className="trust-marquee-group" aria-hidden={copy === 1 ? "true" : undefined}>
+                    {site.trustItems.map((item, index) => (
+                      <div key={`${copy}-${item}-${index}`} className="trust-marquee-item">
+                        <span className="trust-marquee-icon" aria-hidden="true"><Icon name="check" size={13} /></span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              className="trust-carousel-toggle"
+              aria-label={trustCarouselPaused ? "Resume moving service highlights" : "Pause moving service highlights"}
+              aria-pressed={trustCarouselPaused}
+              onClick={() => setTrustCarouselPaused((paused) => !paused)}
+            >
+              {trustCarouselPaused ? <Play size={15} aria-hidden="true" /> : <Pause size={15} aria-hidden="true" />}
+            </button>
+          </div>
+        </section>
+      )}
 
       <section id="about" className="mx-auto max-w-[1400px] px-3 pb-6 md:px-6">
         <div className="rounded-[28px] border border-slate-100 bg-white p-6 shadow-[0_4px_24px_rgba(0,0,0,0.03)] md:p-8">
@@ -732,7 +1005,8 @@ export default function App() {
         <h2 className="text-[22px] font-bold text-slate-900" style={{ fontFamily: site.theme.headingFont }}>
           What We Do
         </h2>
-        <p className="mt-1 text-[13px] text-slate-600">Comprehensive glass and aluminum solutions for Palawan's climate and your every vision.</p>
+                <p className="mt-1 text-[13px] text-slate-600">Comprehensive glass and aluminum solutions for Palawan's climate and your every vision.</p>
+        <p className="mt-2 text-[11px] text-slate-500">Prices are quoted in Philippine pesos (₱). Since every opening and specification is different, select a system to see details and request a measured, itemized quote.</p>
 
         <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {site.services.map((card) => (
@@ -747,37 +1021,51 @@ export default function App() {
                     <p className="mt-1.5 text-[12.5px] leading-relaxed text-slate-600">{card.desc}</p>
                   </div>
                 </div>
-                <div className="mt-5 space-y-2" aria-label={`${card.title} products`}>
-                  {card.products.map((product) => (
-                    <Button
-                      key={product.id}
-                      type="button"
-                      variant="outline"
-                      onClick={() => openProduct(card, product)}
-                      aria-label={`View details for ${product.name}`}
-                      className="group/product min-h-12 h-auto w-full justify-between gap-3 rounded-lg border-slate-200 bg-slate-50 px-3 py-2.5 text-left text-[12px] font-semibold text-slate-800 shadow-sm transition hover:border-[var(--brand-primary)] hover:bg-white hover:text-[var(--brand-primary)] hover:shadow-md focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)] active:translate-y-px"
-                    >
-                      <span className="min-w-0 whitespace-normal leading-snug">{product.name}</span>
-                      <span className="flex shrink-0 items-center gap-1.5 text-[10px] font-semibold uppercase text-[var(--brand-primary)]">
-                        <span>View details</span>
-                        <svg
-                          width="15"
-                          height="15"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                          className="transition-transform group-hover/product:translate-x-0.5"
-                        >
-                          <path d="M5 12h14" />
-                          <path d="m13 6 6 6-6 6" />
-                        </svg>
-                      </span>
-                    </Button>
-                  ))}
+                <div className="mt-5 grid gap-3 sm:grid-cols-2" aria-label={`${card.title} products`}>
+                  {card.products.map((product) => {
+                    const isFlipped = Boolean(flippedProducts[product.id]);
+                    const previewImage = product.media[0];
+                    return (
+                      <article key={product.id} className={`flip-product-card group/product min-w-0 [perspective:1000px] ${isFlipped ? "is-flipped" : ""}`}>
+                        <div className="flip-product-card__stage relative min-h-[148px]">
+                          <button
+                            type="button"
+                            className="flip-product-card__toggle block h-[148px] w-full rounded-[14px] p-0 text-left [perspective:1000px] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
+                            aria-label={`${isFlipped ? "Show front of" : "Flip"} ${product.name}`}
+                            aria-expanded={isFlipped}
+                            aria-controls={`product-preview-${product.id}`}
+                            onClick={() => setFlippedProducts((current) => ({ ...current, [product.id]: !current[product.id] }))}
+                          >
+                            <span className="flip-product-card__inner relative block h-full w-full rounded-[14px]">
+                              <span className={`flip-product-card__face flip-product-card__front absolute inset-0 flex flex-col items-start justify-center overflow-hidden rounded-[14px] border border-slate-200 bg-gradient-to-br from-white to-blue-50 p-4 text-left shadow-sm transition duration-500 ease-in-out group-hover/product:scale-x-[0.88] group-hover/product:opacity-0 ${isFlipped ? "scale-x-[0.88] opacity-0" : "scale-x-100 opacity-100"}`}>
+                                <span className="flip-product-card__eyebrow text-[9px] font-bold uppercase tracking-[0.13em] text-blue-800">{card.title.replace(" By Type", "")}</span>
+                                <span className="flip-product-card__name mt-1 block text-[13px] font-bold leading-tight text-slate-900">{product.name}</span>
+                                <span className="flip-product-card__meta mt-1 block text-[10px] leading-tight text-slate-500">
+                                  {product.subProducts.length > 0 ? `${product.subProducts.length} systems available` : "Made to measure"}
+                                </span>
+                                <span className="flip-product-card__price mt-2 block text-[10px] font-bold text-blue-800">
+                                  {product.priceFrom != null ? `From ${formatPHP(product.priceFrom)} / ${product.priceUnit}` : "Custom quote in PHP"}
+                                </span>
+                                <span className="flip-product-card__hint mt-auto flex w-full items-center justify-between pt-2 text-[9px] font-semibold uppercase tracking-wide text-slate-500">Flip to preview <span aria-hidden="true" className="text-[15px] text-blue-800">↻</span></span>
+                              </span>
+                              <span id={`product-preview-${product.id}`} className={`flip-product-card__face flip-product-card__back absolute inset-0 flex flex-col overflow-hidden rounded-[14px] border border-slate-200 bg-slate-950 transition duration-500 ease-in-out group-hover/product:scale-x-100 group-hover/product:opacity-100 ${isFlipped ? "scale-x-100 opacity-100" : "scale-x-[0.88] opacity-0"}`}>
+                                {previewImage ? <MediaDisplay media={previewImage} className="flip-product-card__image absolute inset-0 h-full w-full object-cover" autoPlay /> : <span className="flip-product-card__image-placeholder absolute inset-0 bg-slate-700" />}
+                                <span className="flip-product-card__scrim absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/35 to-transparent" />
+                                <span className="flip-product-card__back-copy absolute inset-x-0 bottom-0 flex flex-col p-3 pb-3 text-white">
+                                  <span className="flip-product-card__name block text-[12px] font-bold leading-tight text-white">{product.name}</span>
+                                  <span className="flip-product-card__summary mt-1 line-clamp-3 text-[10px] leading-snug text-white/90">{product.description}</span>
+                                  <span className="mt-2 text-[9px] font-semibold uppercase tracking-wide text-white/80">Tap to flip back</span>
+                                </span>
+                              </span>
+                            </span>
+                          </button>
+                          <button type="button" className="flip-product-card__details-button mt-2 flex min-h-9 w-full items-center justify-center gap-2 rounded-xl border border-blue-100 bg-white px-3 text-[10px] font-bold uppercase tracking-wide text-blue-800 shadow-sm transition hover:border-blue-300 hover:bg-blue-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700" onClick={() => openProduct(card, product)}>
+                            <span>View details</span><span aria-hidden="true">↗</span>
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
                 </div>
               </div>
               <div className="mt-auto px-5 pb-5">
@@ -833,14 +1121,38 @@ export default function App() {
                 <DialogDescription className="mt-4 text-[14px] leading-7 text-slate-600">
                   {activeDetail?.description}
                 </DialogDescription>
-                <div className="mt-7 flex flex-wrap gap-3">
+                <div className="mt-5 rounded-xl border border-blue-100 bg-blue-50/60 p-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Pricing in Philippine pesos</p>
+                  <p className="mt-1 text-[15px] font-bold text-slate-900">
+                    {activeDetail?.priceFrom != null
+                      ? `From ${formatPHP(activeDetail.priceFrom)} / ${activeDetail.priceUnit}`
+                      : "Custom quote — priced in PHP"}
+                  </p>
+                  <p className="mt-1 text-[11px] leading-relaxed text-slate-600">Final pricing depends on measurements, glass and frame specifications, hardware, finish, delivery, and installation requirements. We confirm the scope before issuing a quotation.</p>
+                  {activeDetail?.priceFrom != null && (
+                    <div className="mt-3 grid gap-2 border-t border-blue-100 pt-3 sm:grid-cols-3">
+                      {isAreaPriceUnit(activeDetail.priceUnit) && (
+                        <>
+                          <label className="grid gap-1 text-[10px] font-medium text-slate-600">Width (m)<input type="number" min="0" step="0.01" value={estimate.width} onChange={(event) => setEstimate((current) => ({ ...current, width: event.target.value }))} className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-900" /></label>
+                          <label className="grid gap-1 text-[10px] font-medium text-slate-600">Height (m)<input type="number" min="0" step="0.01" value={estimate.height} onChange={(event) => setEstimate((current) => ({ ...current, height: event.target.value }))} className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-900" /></label>
+                        </>
+                      )}
+                      <label className="grid gap-1 text-[10px] font-medium text-slate-600">{isAreaPriceUnit(activeDetail.priceUnit) ? "Quantity" : `Quantity (${activeDetail.priceUnit})`}<input type="number" min="1" step="1" value={estimate.quantity} onChange={(event) => setEstimate((current) => ({ ...current, quantity: event.target.value }))} className="h-9 rounded-md border border-slate-200 bg-white px-2 text-sm text-slate-900" /></label>
+                      <p className="text-[11px] leading-relaxed text-slate-600 sm:col-span-3">Guide estimate: <strong className="text-sm text-slate-900">{formatPHP(calculateEstimate(activeDetail.priceFrom, activeDetail.priceUnit, estimate))}</strong>. This is an indicative calculation from the starting rate you entered, not a final quotation.</p>
+                    </div>
+                  )}
+                </div>
+                <div className="mt-6 flex flex-wrap gap-3">
                   {activeSubProduct && (
                     <Button type="button" variant="outline" onClick={() => openSubProduct(null)}>
                       Back to {selectedProduct.product.name}
                     </Button>
                   )}
                   <Button asChild className="w-fit hover:opacity-90" style={{ backgroundColor: site.theme.primary, color: site.theme.surface }}>
-                    <a href="#quote" onClick={() => setSelectedProduct(null)}>Request a Quote</a>
+                    <a
+                      href={`/quote-request?product=${encodeURIComponent(activeDetail?.name ?? selectedProduct.product.name)}&category=${encodeURIComponent(selectedProduct.group.title)}&system=${encodeURIComponent(selectedProduct.product.name)}`}
+                      onClick={() => setSelectedProduct(null)}
+                    >Request a Quote</a>
                   </Button>
                 </div>
               </div>
@@ -877,29 +1189,147 @@ export default function App() {
         )}
       </Dialog>
 
-      <section id="projects" className="mx-auto max-w-[1400px] px-6 py-4 md:px-10">
-        <h2 className="text-[22px] font-bold text-slate-900" style={{ fontFamily: site.theme.headingFont }}>
-          Recent Projects
-        </h2>
-        <p className="mt-1 text-[13px] text-slate-600">Installations across Puerto Princesa, Palawan, and nearby areas.</p>
+      <section id="projects" className="project-showcase-section mx-auto max-w-[1400px] px-5 py-12 md:px-10 md:py-16">
+        <div className="project-showcase-heading">
+          <div>
+            <p className="project-section-eyebrow"><span /> {site.projectsEyebrow}</p>
+            <h2 style={{ fontFamily: site.theme.headingFont }}>{site.projectsTitle}</h2>
+            <p>{site.projectsSubtitle}</p>
+          </div>
+          <div className="project-count-card" aria-label={`${site.projects.length} projects in the portfolio`}>
+            <strong>{String(site.projects.length).padStart(2, "0")}</strong>
+            <span>Featured<br />projects</span>
+          </div>
+        </div>
 
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {site.projects.map((project) => (
-            <div key={project.id} className="group overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-              <div className="relative h-[180px] w-full overflow-hidden">
-                <MediaDisplay media={project.media} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" autoPlay />
-              </div>
-              <div className="flex items-center justify-between gap-3 px-4 py-3">
-                <div className="text-[14px] font-semibold text-slate-900">{project.name}</div>
-                <button className="inline-flex items-center gap-1 text-[11px] font-medium transition hover:underline" style={{ color: site.theme.primary }}>
-                  {project.ctaLabel}
-                  <Icon name="check" size={12} className="-rotate-90" />
-                </button>
-              </div>
-            </div>
-          ))}
+        {projectCategories.length > 1 && (
+          <div className="project-filter-row" role="group" aria-label="Filter projects by category">
+            {["All", ...projectCategories].map((category) => (
+              <button
+                key={category}
+                type="button"
+                aria-pressed={selectedProjectCategory === category}
+                onClick={() => setSelectedProjectCategory(category)}
+                className={`project-filter-chip ${selectedProjectCategory === category ? "is-active" : ""}`}
+              >
+                {category === "All" ? "All projects" : category}
+                {category === "All" && <span>{site.projects.length}</span>}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="project-showcase-grid">
+          {visibleProjects.map((project, index) => {
+            const isFlipped = Boolean(flippedProjects[project.id]);
+            const photoCount = 1 + (project.gallery?.length ?? 0);
+            return (
+              <article key={project.id} className="project-showcase-card motion-reveal" style={{ "--motion-delay": `${Math.min(index, 6) * 70}ms` } as CSSProperties}>
+                <div className="project-card-scene">
+                  <button
+                    type="button"
+                    className={`project-flip-button ${isFlipped ? "is-flipped" : ""}`}
+                    aria-pressed={isFlipped}
+                    aria-label={`${isFlipped ? "Show photo" : "Show details for"} ${project.name}`}
+                    onClick={() => setFlippedProjects((current) => ({ ...current, [project.id]: !current[project.id] }))}
+                  >
+                    <span className="project-flip-inner">
+                      <span className="project-card-face project-card-front">
+                        <MediaDisplay
+                          media={{ ...project.media, src: project.media?.src || getProjectFallbackImage(project.category) }}
+                          className="project-card-cover"
+                          autoPlay
+                          fallbackSrc={getProjectFallbackImage(project.category)}
+                        />
+                        <span className="project-card-image-scrim" />
+                        <span className="project-card-topline">
+                          <span className="project-category-tag">{project.category || "Featured Project"}</span>
+                          <span className="project-image-count"><Icon name="glass" size={13} /> {photoCount} {photoCount === 1 ? "photo" : "photos"}</span>
+                        </span>
+                        <span className="project-card-front-copy">
+                          {project.location && <span className="project-location-tag"><Icon name="pin" size={12} /> {project.location}</span>}
+                          <strong>{project.name}</strong>
+                          <span className="project-flip-prompt">Flip to explore <span aria-hidden="true">↻</span></span>
+                        </span>
+                      </span>
+                      <span className="project-card-face project-card-back">
+                        <span className="project-back-orbit" aria-hidden="true" />
+                        <span className="project-back-content">
+                          <span className="project-back-eyebrow">PROJECT SPOTLIGHT</span>
+                          <strong>{project.name}</strong>
+                          <span className="project-back-rule" />
+                          {project.location && <span className="project-back-meta"><Icon name="pin" size={14} /> {project.location}</span>}
+                          <span className="project-back-description">{project.description || "Explore the project gallery and see the details of this glass and aluminum installation."}</span>
+                          {project.category && <span className="project-back-category">{project.category}</span>}
+                          <span className="project-flip-prompt">Tap to return to photo <span aria-hidden="true">↻</span></span>
+                        </span>
+                      </span>
+                    </span>
+                  </button>
+                </div>
+                <div className="project-card-footer">
+                  <div className="project-card-footer-copy">
+                    <span>{project.category || "Azarraga project"}</span>
+                    <strong>{project.name}</strong>
+                  </div>
+                  <button type="button" className="project-gallery-button" onClick={() => openProject(project)} aria-label={`${project.ctaLabel || "View project"}: ${project.name}`}>
+                    <span>{project.ctaLabel || "View project"}</span><ArrowRight size={16} aria-hidden="true" />
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
+
+      <Dialog open={Boolean(selectedProject)} onOpenChange={(open) => !open && setSelectedProject(null)}>
+        {selectedProject && (
+          <DialogContent className="project-gallery-dialog max-h-[94vh] max-w-6xl overflow-y-auto border-0 bg-white p-0 shadow-2xl sm:rounded-[26px]">
+            <div className="grid min-h-[430px] lg:grid-cols-[1.25fr_0.75fr]">
+              <div className="project-gallery-viewer bg-slate-950 p-3 sm:p-5">
+                <div className="project-gallery-main relative overflow-hidden rounded-2xl bg-slate-900">
+                  {selectedProjectMedia[selectedProjectImage] ? (
+                    <MediaDisplay media={selectedProjectMedia[selectedProjectImage]} className="h-full w-full object-cover" autoPlay fallbackSrc={getProjectFallbackImage(selectedProject.category)} />
+                  ) : (
+                    <div className="grid h-full place-items-center text-sm text-white/60">Project photo coming soon</div>
+                  )}
+                  {selectedProjectMedia.length > 1 && (
+                    <>
+                      <button type="button" className="project-gallery-nav project-gallery-prev" aria-label="Previous project photo" onClick={() => setSelectedProjectImage((index) => (index - 1 + selectedProjectMedia.length) % selectedProjectMedia.length)}><ChevronLeft size={20} /></button>
+                      <button type="button" className="project-gallery-nav project-gallery-next" aria-label="Next project photo" onClick={() => setSelectedProjectImage((index) => (index + 1) % selectedProjectMedia.length)}><ChevronRight size={20} /></button>
+                      <span className="project-gallery-counter">{selectedProjectImage + 1} / {selectedProjectMedia.length}</span>
+                    </>
+                  )}
+                </div>
+                {selectedProjectMedia.length > 1 && (
+                  <div className="project-gallery-thumbnails" aria-label="Project photo thumbnails">
+                    {selectedProjectMedia.map((media, index) => (
+                      <button key={media.id} type="button" aria-label={`View project photo ${index + 1}`} aria-pressed={selectedProjectImage === index} onClick={() => setSelectedProjectImage(index)} className={`project-gallery-thumbnail ${selectedProjectImage === index ? "is-active" : ""}`}>
+                        <MediaDisplay media={media} className="h-full w-full object-cover" autoPlay fallbackSrc={getProjectFallbackImage(selectedProject.category)} />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="project-gallery-details">
+                <p className="project-back-eyebrow">{selectedProject.category || "AZARRAGA PROJECT"}</p>
+                <DialogTitle className="mt-2 pr-8 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl" style={{ fontFamily: site.theme.headingFont }}>{selectedProject.name}</DialogTitle>
+                {selectedProject.location && <p className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-500"><Icon name="pin" size={15} /> {selectedProject.location}</p>}
+                <DialogDescription className="mt-5 text-sm leading-7 text-slate-600">
+                  {selectedProject.description || "See the project photos and details from this glass and aluminum installation."}
+                </DialogDescription>
+                <div className="mt-6 flex items-center gap-3 rounded-2xl border border-blue-100 bg-blue-50/70 p-4 text-xs leading-5 text-slate-600">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white text-blue-800 shadow-sm"><Icon name="glass" size={18} /></span>
+                  <span>Planning something similar? Share your plans, measurements, or reference photos with our team.</span>
+                </div>
+                <Button asChild className="mt-6 w-full rounded-xl py-5 font-bold text-white shadow-lg hover:opacity-95" style={{ backgroundColor: site.theme.primary }}>
+                  <a href={`/quote-request?project_details=${encodeURIComponent(`I'm interested in a project like ${selectedProject.name}.`)}`} onClick={() => setSelectedProject(null)}>Discuss a similar project <ArrowRight size={16} className="ml-2" /></a>
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        )}
+      </Dialog>
 
       <section id="process" className="mx-auto max-w-[1400px] px-6 py-10 md:px-10">
         <div>
@@ -960,77 +1390,84 @@ export default function App() {
       <section id="quote" className="mx-auto max-w-[1400px] px-3 pb-10 md:px-6">
         <div className="grid gap-6 lg:grid-cols-12">
           <div className="lg:col-span-7">
-            <div className="rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm md:p-7">
-              <h3 className="text-[18px] font-bold text-slate-900" style={{ fontFamily: site.theme.headingFont }}>
-                {site.quote.title}
-              </h3>
-              <p className="text-[12px] text-slate-500">{site.quote.subtitle}</p>
-
-              <form className="mt-5 grid grid-cols-1 gap-3 md:grid-cols-2" onSubmit={(event) => event.preventDefault()}>
-                <AdminInput placeholder="Full name" />
-                <AdminInput placeholder="Email" type="email" />
-                <AdminInput placeholder="Phone" />
-                <AdminInput placeholder="Location (e.g., Brgy. San Manuel, Puerto Princesa)" />
-                <select className="rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-[13px] text-slate-600 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 md:col-span-2">
-                  <option>Service or Interest - Select a service</option>
-                  {site.quote.services.map((service, index) => (
-                    <option key={`${service}-${index}`}>{service}</option>
+            <div className="relative overflow-hidden rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm md:p-8">
+              <div className="absolute -right-10 -top-14 h-48 w-48 rounded-full bg-blue-50 blur-3xl" aria-hidden="true" />
+              <div className="relative">
+                <div className="flex items-start gap-4">
+                  <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-white shadow-md" style={{ background: `linear-gradient(135deg, ${site.theme.primary}, ${site.theme.primaryDark})` }}>
+                    <Icon name="mail" size={22} />
+                  </div>
+                  <div>
+                    <h3 className="text-[20px] font-bold text-slate-900" style={{ fontFamily: site.theme.headingFont }}>{site.quote.title}</h3>
+                    <p className="mt-1 max-w-2xl text-[13px] leading-6 text-slate-600">{site.quote.subtitle}</p>
+                  </div>
+                </div>
+                <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                  {[
+                    ["Choose multiple systems", "Windows, doors, glass and more in one request."],
+                    ["Add plans or photos", "Attach references so we understand the opening."],
+                    ["Get a measured quote", "Final pricing is prepared for your project details."],
+                  ].map(([title, description], index) => (
+                    <div key={title} className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
+                      <span className="grid h-7 w-7 place-items-center rounded-full bg-blue-100 text-[10px] font-bold text-blue-800">0{index + 1}</span>
+                      <p className="mt-3 text-[12px] font-bold text-slate-800">{title}</p>
+                      <p className="mt-1 text-[11px] leading-5 text-slate-500">{description}</p>
+                    </div>
                   ))}
-                </select>
-                <textarea
-                  placeholder="Project details"
-                  rows={4}
-                  className="rounded-lg border border-slate-200 px-3 py-2.5 text-[13px] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 md:col-span-2"
-                />
-                <button
-                  className="inline-flex items-center justify-center gap-2 rounded-lg px-5 py-3 text-[14px] font-semibold text-white shadow-md transition hover:opacity-95 md:col-span-2"
-                  style={{ backgroundColor: site.theme.primary }}
-                >
-                  Send Request
-                  <Icon name="check" size={16} className="-rotate-90" />
-                </button>
-              </form>
-              <p className="mt-2 text-[11px] text-slate-500">By submitting, you agree to our terms and we will contact you shortly.</p>
-            </div>
-          </div>
-
-          <div id="contact" className="space-y-4 lg:col-span-5">
-            <div className="rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm">
-              <h4 className="mb-3 text-[13px] font-semibold text-slate-900">Contact</h4>
-              <div className="space-y-2.5 text-[13px] text-slate-700">
-                <div className="flex items-center gap-2.5">
-                  <span style={{ color: site.theme.primary }}>
-                    <Icon name="phone" size={16} />
-                  </span>
-                  {site.contact.phone}
                 </div>
-                <div className="flex items-center gap-2.5">
-                  <span style={{ color: site.theme.primary }}>
-                    <Icon name="mail" size={16} />
-                  </span>
-                  {site.contact.email}
-                </div>
-                <div className="flex items-start gap-2.5">
-                  <span className="mt-0.5" style={{ color: site.theme.primary }}>
-                    <Icon name="pin" size={16} />
-                  </span>
-                  <span>{site.contact.address}</span>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <a href="/quote-request" className="inline-flex items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl" style={{ background: `linear-gradient(135deg, ${site.theme.primary}, ${site.theme.primaryDark})` }}>
+                    Start your full quote request <Icon name="check" size={16} className="-rotate-90" />
+                  </a>
+                  <span className="text-[11px] text-slate-500">Usually takes about 2 minutes · multiple services welcome</span>
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="rounded-[24px] border border-slate-100 bg-white p-6 shadow-sm">
-              <h4 className="mb-3 text-[13px] font-semibold text-slate-900">Why choose us</h4>
-              <ul className="space-y-2 text-[12.5px] text-slate-700">
+          <div id="contact" className="contact-stack lg:col-span-5">
+            <div className="contact-details-card">
+              <div className="contact-card-heading">
+                <span className="contact-card-icon" style={{ background: `linear-gradient(145deg, ${site.theme.primary}, ${site.theme.primaryDark})` }}><Icon name="phone" size={19} /></span>
+                <div>
+                  <p className="contact-card-eyebrow">LET’S TALK ABOUT YOUR PROJECT</p>
+                  <h4>Contact</h4>
+                </div>
+              </div>
+              <div className="contact-info-list">
+                <a className="contact-info-row" href={`tel:${site.contact.phone.replace(/[^+\d]/g, "")}`}>
+                  <span className="contact-info-icon" style={{ color: site.theme.primary, backgroundColor: site.theme.accent }}><Icon name="phone" size={17} /></span>
+                  <span className="contact-info-copy"><small>Call our team</small><strong>{site.contact.phone}</strong></span>
+                  <ArrowRight size={15} className="contact-info-arrow" aria-hidden="true" />
+                </a>
+                <a className="contact-info-row" href={`mailto:${site.contact.email}`}>
+                  <span className="contact-info-icon" style={{ color: site.theme.primary, backgroundColor: site.theme.accent }}><Icon name="mail" size={17} /></span>
+                  <span className="contact-info-copy"><small>Email us</small><strong>{site.contact.email}</strong></span>
+                  <ArrowRight size={15} className="contact-info-arrow" aria-hidden="true" />
+                </a>
+                <a className="contact-info-row contact-address-row" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(site.contact.address)}`} target="_blank" rel="noreferrer">
+                  <span className="contact-info-icon" style={{ color: site.theme.primary, backgroundColor: site.theme.accent }}><Icon name="pin" size={17} /></span>
+                  <span className="contact-info-copy"><small>Visit our location</small><strong>{site.contact.address}</strong></span>
+                  <ArrowRight size={15} className="contact-info-arrow" aria-hidden="true" />
+                </a>
+              </div>
+              <div className="contact-card-footer"><span className="contact-live-dot" /> Serving Puerto Princesa and nearby Palawan communities</div>
+            </div>
+
+            <div className="why-choose-card" style={{ background: `linear-gradient(145deg, ${site.theme.primary}, ${site.theme.primaryDark})` }}>
+              <div className="why-choose-heading">
+                <span className="why-choose-heading-icon"><Sparkles size={17} aria-hidden="true" /></span>
+                <div><p>THE AZARRAGA DIFFERENCE</p><h4>Why choose us</h4></div>
+              </div>
+              <ul className="why-choose-list">
                 {site.whyChoose.map((item, index) => (
-                  <li key={`${item}-${index}`} className="flex items-start gap-2">
-                    <span className="mt-0.5 grid h-4 w-4 place-items-center rounded-full" style={{ backgroundColor: site.theme.accent, color: site.theme.primary }}>
-                      <Icon name="check" size={10} />
-                    </span>
-                    {item}
+                  <li key={`${item}-${index}`}>
+                    <span className="why-choose-check"><Icon name="check" size={12} /></span>
+                    <span>{item}</span>
                   </li>
                 ))}
               </ul>
+              <div className="why-choose-decoration" aria-hidden="true" />
             </div>
           </div>
         </div>
@@ -1780,7 +2217,7 @@ export default function App() {
                                               ...item,
                                               products: [
                                                 ...item.products,
-                                                { id: createId(), name: "New Product", description: "Add a complete product explanation here.", media: [], subProducts: [] },
+                                                { id: createId(), name: "New Product", description: "Add a complete product explanation here.", media: [], subProducts: [], priceFrom: null, priceUnit: "sqm" },
                                               ],
                                             }
                                           : item,
@@ -1813,6 +2250,22 @@ export default function App() {
                                           setSite((prev) => updateProduct(prev, service.id, product.id, (current) => ({ ...current, description: value })))
                                         }
                                       />
+                                      <div className="grid gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3 sm:grid-cols-2">
+                                        <Field
+                                          label="Starting price (PHP, optional)"
+                                          type="number"
+                                          value={product.priceFrom == null ? "" : String(product.priceFrom)}
+                                          placeholder="Leave blank for custom quote"
+                                          onChange={(value) => setSite((prev) => updateProduct(prev, service.id, product.id, (current) => ({ ...current, priceFrom: parseOptionalPrice(value) })))}
+                                        />
+                                        <Field
+                                          label="Price basis"
+                                          value={product.priceUnit}
+                                          placeholder="sqm, linear meter, set"
+                                          onChange={(value) => setSite((prev) => updateProduct(prev, service.id, product.id, (current) => ({ ...current, priceUnit: value || "sqm" })))}
+                                        />
+                                        <p className="text-[11px] leading-relaxed text-slate-500 sm:col-span-2">Only enter a confirmed Azarraga rate. The public page displays prices in Philippine pesos (₱); leave blank to show “Custom quote”.</p>
+                                      </div>
                                       <div>
                                         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                                           <p className="text-[12px] font-semibold text-slate-700">Product Images & Videos</p>
@@ -1872,7 +2325,7 @@ export default function App() {
                                                   ...current,
                                                   subProducts: [
                                                     ...current.subProducts,
-                                                    { id: createId(), name: "New System", description: "Describe this system here.", media: [] },
+                                                    { id: createId(), name: "New System", description: "Describe this system here.", media: [], priceFrom: null, priceUnit: "sqm" },
                                                   ],
                                                 })),
                                               )
@@ -1920,6 +2373,21 @@ export default function App() {
                                                     )
                                                   }
                                                 />
+                                                <div className="grid gap-3 rounded-xl border border-blue-100 bg-blue-50/50 p-3 sm:grid-cols-2">
+                                                  <Field
+                                                    label="Starting price (PHP, optional)"
+                                                    type="number"
+                                                    value={sub.priceFrom == null ? "" : String(sub.priceFrom)}
+                                                    placeholder="Leave blank for custom quote"
+                                                    onChange={(value) => setSite((prev) => updateProduct(prev, service.id, product.id, (current) => ({ ...current, subProducts: current.subProducts.map((entry) => entry.id === sub.id ? { ...entry, priceFrom: parseOptionalPrice(value) } : entry) })))}
+                                                  />
+                                                  <Field
+                                                    label="Price basis"
+                                                    value={sub.priceUnit}
+                                                    placeholder="sqm, linear meter, set"
+                                                    onChange={(value) => setSite((prev) => updateProduct(prev, service.id, product.id, (current) => ({ ...current, subProducts: current.subProducts.map((entry) => entry.id === sub.id ? { ...entry, priceUnit: value || "sqm" } : entry) })))}
+                                                  />
+                                                </div>
                                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                                   <p className="text-[12px] font-semibold text-slate-700">Sub-product Images & Videos</p>
                                                   <MultiFileUploader
@@ -2049,21 +2517,34 @@ export default function App() {
                       </div>
                     </AdminSection>
 
-                    <AdminSection title="Projects Section" description="Add, edit, or remove project cards and assign an image or video to each one.">
-                      <div className="space-y-3">
-                        <div className="flex flex-wrap items-center gap-2">
+                    <AdminSection title="Projects Section" description="Keep your portfolio current from any device: update each project’s cover, gallery photos, title, category, location, description, and button label. Changes auto-save to the site content.">
+                      <div className="space-y-4">
+                        <div className="grid gap-4 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:grid-cols-2">
+                          <Field label="Section eyebrow" value={site.projectsEyebrow} onChange={(value) => setSite((prev) => ({ ...prev, projectsEyebrow: value }))} />
+                          <Field label="Section title" value={site.projectsTitle} onChange={(value) => setSite((prev) => ({ ...prev, projectsTitle: value }))} />
+                          <div className="sm:col-span-2"><TextAreaField label="Section introduction" value={site.projectsSubtitle} onChange={(value) => setSite((prev) => ({ ...prev, projectsSubtitle: value }))} /></div>
+                        </div>
+                        <div className="flex flex-col gap-3 rounded-2xl border border-blue-100 bg-gradient-to-r from-blue-50 to-white p-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div>
+                            <p className="text-sm font-bold text-slate-900">Add finished work</p>
+                            <p className="mt-1 text-xs leading-5 text-slate-600">Upload one or more cover images from this device. Each image starts a project card you can edit below.</p>
+                          </div>
                           <MultiFileUploader
-                            label="Upload Multiple Images"
+                            label="Upload project covers"
                             onFiles={(files) =>
                               setSite((prev) => ({
                                 ...prev,
                                 projects: [
                                   ...prev.projects,
-                                  ...files.map((f) => ({
+                                  ...files.map((file) => ({
                                     id: createId(),
-                                    name: f.alt.replace(/\.[^/.]+$/, ""),
-                                    ctaLabel: "View Project",
-                                    media: { id: createId(), ...f },
+                                    name: file.alt.replace(/\.[^/.]+$/, ""),
+                                    ctaLabel: "Explore Project",
+                                    category: "",
+                                    location: "",
+                                    description: "",
+                                    gallery: [],
+                                    media: { id: createId(), ...file },
                                   })),
                                 ],
                               }))
@@ -2071,69 +2552,88 @@ export default function App() {
                           />
                         </div>
                         {site.projects.map((project) => (
-                          <div key={project.id} className="rounded-2xl border border-slate-200 p-4">
-                            <div className="grid gap-4 md:grid-cols-2">
-                              <Field
-                                label="Project Name"
-                                value={project.name}
-                                onChange={(value) =>
-                                  setSite((prev) => ({
-                                    ...prev,
-                                    projects: prev.projects.map((item) => (item.id === project.id ? { ...item, name: value } : item)),
-                                  }))
-                                }
-                              />
-                              <Field
-                                label="CTA Label"
-                                value={project.ctaLabel}
-                                onChange={(value) =>
-                                  setSite((prev) => ({
-                                    ...prev,
-                                    projects: prev.projects.map((item) => (item.id === project.id ? { ...item, ctaLabel: value } : item)),
-                                  }))
-                                }
-                              />
-                            </div>
-                            <div className="mt-4">
+                          <details key={project.id} className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-4 transition hover:bg-slate-50 sm:px-5">
+                              <span className="flex min-w-0 items-center gap-3">
+                                <span className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                                  {project.media?.src && <MediaDisplay media={project.media} className="h-full w-full object-cover" autoPlay />}
+                                </span>
+                                <span className="min-w-0"><strong className="block truncate text-sm text-slate-900">{project.name || "Untitled project"}</strong><small className="mt-1 block truncate text-[11px] text-slate-500">{project.category || "Add a category"}{project.location ? ` · ${project.location}` : ""}</small></span>
+                              </span>
+                              <span className="flex shrink-0 items-center gap-3 text-xs font-semibold text-blue-800"><span className="hidden sm:inline">Edit project</span><span className="transition group-open:rotate-180" aria-hidden="true">⌄</span></span>
+                            </summary>
+                            <div className="space-y-5 border-t border-slate-100 p-4 sm:p-5">
+                              <div className="grid gap-4 sm:grid-cols-2">
+                                <Field label="Project name" value={project.name} onChange={(value) => setSite((prev) => ({ ...prev, projects: prev.projects.map((item) => item.id === project.id ? { ...item, name: value } : item) }))} />
+                                <Field label="Category / project type" value={project.category ?? ""} onChange={(value) => setSite((prev) => ({ ...prev, projects: prev.projects.map((item) => item.id === project.id ? { ...item, category: value } : item) }))} />
+                                <Field label="Project location (optional)" value={project.location ?? ""} onChange={(value) => setSite((prev) => ({ ...prev, projects: prev.projects.map((item) => item.id === project.id ? { ...item, location: value } : item) }))} />
+                                <Field label="Gallery button label" value={project.ctaLabel} onChange={(value) => setSite((prev) => ({ ...prev, projects: prev.projects.map((item) => item.id === project.id ? { ...item, ctaLabel: value } : item) }))} />
+                              </div>
+                              <TextAreaField label="Project description / story" value={project.description ?? ""} onChange={(value) => setSite((prev) => ({ ...prev, projects: prev.projects.map((item) => item.id === project.id ? { ...item, description: value } : item) }))} />
                               <MediaEditor
-                                title="Project Media"
+                                title="Cover image"
                                 media={project.media}
-                                onChange={(nextMedia) =>
-                                  setSite((prev) => ({
-                                    ...prev,
-                                    projects: prev.projects.map((item) => (item.id === project.id ? { ...item, media: nextMedia } : item)),
-                                  }))
-                                }
+                                onChange={(nextMedia) => setSite((prev) => ({ ...prev, projects: prev.projects.map((item) => item.id === project.id ? { ...item, media: nextMedia } : item) }))}
                               />
+                              <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                  <div><p className="text-sm font-bold text-slate-900">Project photo gallery</p><p className="mt-1 text-[11px] leading-5 text-slate-500">Add multiple finished-work images from your phone, tablet, or computer.</p></div>
+                                  <MultiFileUploader
+                                    label="Add gallery photos"
+                                    onFiles={(files) => setSite((prev) => ({
+                                      ...prev,
+                                      projects: prev.projects.map((item) => item.id === project.id
+                                        ? { ...item, gallery: [...(item.gallery ?? []), ...files.map((file) => ({ id: createId(), ...file }))] }
+                                        : item),
+                                    }))}
+                                  />
+                                </div>
+                                {(project.gallery ?? []).length > 0 ? (
+                                  <div className="grid gap-3 sm:grid-cols-2">
+                                    {(project.gallery ?? []).map((media, mediaIndex) => (
+                                      <MediaEditor
+                                        key={media.id}
+                                        title={`Gallery photo ${mediaIndex + 1}`}
+                                        media={media}
+                                        onChange={(nextMedia) => setSite((prev) => ({
+                                          ...prev,
+                                          projects: prev.projects.map((item) => item.id === project.id
+                                            ? { ...item, gallery: (item.gallery ?? []).map((entry) => entry.id === media.id ? nextMedia : entry) }
+                                            : item),
+                                        }))}
+                                        onDelete={() => setSite((prev) => ({
+                                          ...prev,
+                                          projects: prev.projects.map((item) => item.id === project.id
+                                            ? { ...item, gallery: (item.gallery ?? []).filter((entry) => entry.id !== media.id) }
+                                            : item),
+                                        }))}
+                                      />
+                                    ))}
+                                  </div>
+                                ) : <p className="rounded-xl border border-dashed border-slate-300 bg-white px-4 py-5 text-center text-xs text-slate-500">No additional project photos yet. Add photos to make the project gallery interactive.</p>}
+                              </div>
+                              <button type="button" onClick={() => setSite((prev) => ({ ...prev, projects: prev.projects.filter((item) => item.id !== project.id) }))} className="rounded-xl border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50">Delete Project</button>
                             </div>
-                            <button
-                              type="button"
-                              onClick={() => setSite((prev) => ({ ...prev, projects: prev.projects.filter((item) => item.id !== project.id) }))}
-                              className="mt-4 rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-50"
-                            >
-                              Delete Project
-                            </button>
-                          </div>
+                          </details>
                         ))}
                         <button
                           type="button"
-                          onClick={() =>
-                            setSite((prev) => ({
-                              ...prev,
-                              projects: [
-                                ...prev.projects,
-                                {
-                                  id: createId(),
-                                  name: "New Project",
-                                  ctaLabel: "View Project",
-                                  media: { id: createId(), type: "image", src: "/images/hero-main.jpg", alt: "New project" },
-                                },
-                              ],
-                            }))
-                          }
-                          className="rounded-xl border border-dashed border-slate-300 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                          onClick={() => setSite((prev) => ({
+                            ...prev,
+                            projects: [...prev.projects, {
+                              id: createId(),
+                              name: "New Project",
+                              ctaLabel: "Explore Project",
+                              category: "",
+                              location: "",
+                              description: "",
+                              media: { id: createId(), type: "image", src: "", alt: "Project cover image" },
+                              gallery: [],
+                            }],
+                          }))}
+                          className="inline-flex w-full items-center justify-center rounded-xl border border-dashed border-blue-300 bg-blue-50/50 px-4 py-3 text-sm font-semibold text-blue-800 transition hover:bg-blue-50"
                         >
-                          Add Project Card
+                          + Add Project Card
                         </button>
                       </div>
                     </AdminSection>
@@ -2283,6 +2783,59 @@ export default function App() {
                             onChange={(items) => setSite((prev) => ({ ...prev, quote: { ...prev.quote, services: items } }))}
                           />
                         </div>
+                        <div className="mt-6 border-t border-slate-200 pt-4">
+                          <p className="text-sm font-semibold text-slate-900">Dedicated Quote Request Page</p>
+                          <div className="mt-4 grid gap-4 md:grid-cols-2">
+                            <Field
+                              label="Form Heading"
+                              value={site.quotePage.formTitle}
+                              onChange={(value) => setSite((prev) => ({ ...prev, quotePage: { ...prev.quotePage, formTitle: value } }))}
+                            />
+                            <Field
+                              label="Submit Button Label"
+                              value={site.quotePage.submitLabel}
+                              onChange={(value) => setSite((prev) => ({ ...prev, quotePage: { ...prev.quotePage, submitLabel: value } }))}
+                            />
+                          </div>
+                          <div className="mt-4 grid gap-4 md:grid-cols-2">
+                            <TextAreaField
+                              label="Form Intro"
+                              value={site.quotePage.formIntro}
+                              onChange={(value) => setSite((prev) => ({ ...prev, quotePage: { ...prev.quotePage, formIntro: value } }))}
+                            />
+                            <TextAreaField
+                              label="Attachment Help Text"
+                              value={site.quotePage.attachmentHelp}
+                              onChange={(value) => setSite((prev) => ({ ...prev, quotePage: { ...prev.quotePage, attachmentHelp: value } }))}
+                            />
+                            <TextAreaField
+                              label="Privacy Note"
+                              value={site.quotePage.privacyNote}
+                              onChange={(value) => setSite((prev) => ({ ...prev, quotePage: { ...prev.quotePage, privacyNote: value } }))}
+                            />
+                          </div>
+                          <div className="mt-4 grid gap-4 md:grid-cols-2">
+                            <ArrayStringEditor
+                              label="Project Type Choices"
+                              items={site.quotePage.projectTypes}
+                              addLabel="Add Project Type"
+                              onChange={(items) => setSite((prev) => ({ ...prev, quotePage: { ...prev.quotePage, projectTypes: items } }))}
+                            />
+                            <ArrayStringEditor
+                              label="Project Timeline Choices"
+                              items={site.quotePage.timelines}
+                              addLabel="Add Timeline"
+                              onChange={(items) => setSite((prev) => ({ ...prev, quotePage: { ...prev.quotePage, timelines: items } }))}
+                            />
+                            <ArrayStringEditor
+                              label="Optional Budget Ranges"
+                              items={site.quotePage.budgetRanges}
+                              addLabel="Add Budget Range"
+                              onChange={(items) => setSite((prev) => ({ ...prev, quotePage: { ...prev.quotePage, budgetRanges: items } }))}
+                            />
+                          </div>
+                          <p className="mt-3 text-[11px] text-slate-500">These settings are used on the standalone quote-request page and auto-save with the rest of the website content.</p>
+                        </div>
                       </div>
 
                       <div className="mt-4 rounded-2xl border border-slate-200 p-4">
@@ -2360,7 +2913,20 @@ export default function App() {
   );
 }
 
-function MediaDisplay({ media, className, autoPlay = false }: { media: MediaItem; className: string; autoPlay?: boolean }) {
+function MediaDisplay({ media, className, autoPlay = false, fallbackSrc, onMediaError }: { media: MediaItem; className: string; autoPlay?: boolean; fallbackSrc?: string; onMediaError?: () => void }) {
+  const [loadFailed, setLoadFailed] = useState(false);
+  useEffect(() => setLoadFailed(false), [media.src]);
+  const canFallback = Boolean(fallbackSrc && fallbackSrc !== media.src);
+  const handleLoadError = () => {
+    console.warn(`Landing-page media failed to load: ${media.src}`);
+    onMediaError?.();
+    if (canFallback) setLoadFailed(true);
+  };
+
+  if (loadFailed && fallbackSrc) {
+    return <img src={fallbackSrc} alt={media.alt || "Project image"} className={className} />;
+  }
+
   if (media.type === "video") {
     return (
       <video
@@ -2371,21 +2937,12 @@ function MediaDisplay({ media, className, autoPlay = false }: { media: MediaItem
         loop={autoPlay}
         playsInline
         controls={!autoPlay}
+        onError={handleLoadError}
       />
     );
   }
 
-  return <img src={media.src} alt={media.alt} className={className} />;
-}
-
-function AdminInput({ placeholder, type = "text" }: { placeholder: string; type?: string }) {
-  return (
-    <input
-      placeholder={placeholder}
-      type={type}
-      className="rounded-lg border border-slate-200 px-3 py-2.5 text-[13px] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-    />
-  );
+  return <img src={media.src} alt={media.alt} className={className} onError={handleLoadError} />;
 }
 
 function AdminSection({ title, description, children }: { title: string; description: string; children: ReactNode }) {
@@ -2403,11 +2960,13 @@ function AdminSection({ title, description, children }: { title: string; descrip
   );
 }
 
-function Field({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+function Field({ label, value, onChange, type = "text", placeholder }: { label: string; value: string; onChange: (value: string) => void; type?: string; placeholder?: string }) {
   return (
     <label className="grid gap-1.5 text-[12px] font-medium text-slate-700">
       <span>{label}</span>
       <input
+        type={type}
+        placeholder={placeholder}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="rounded-xl border border-slate-200 px-3 py-2.5 text-[13px] outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
@@ -2531,16 +3090,27 @@ function MediaEditor({
   onChange: (media: MediaItem) => void;
   onDelete?: () => void;
 }) {
+  const [uploadError, setUploadError] = useState("");
+  const [previewError, setPreviewError] = useState(false);
+  useEffect(() => setPreviewError(false), [media.src]);
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+    const input = event.currentTarget;
+    const file = input.files?.[0];
     if (!file) return;
-    const src = await uploadFile(file);
-    onChange({
-      ...media,
-      src,
-      alt: media.alt || file.name,
-      type: file.type.startsWith("video") ? "video" : "image",
-    });
+    setUploadError("");
+    try {
+      const src = await uploadFile(file);
+      onChange({
+        ...media,
+        src,
+        alt: media.alt || file.name,
+        type: file.type.startsWith("video") ? "video" : "image",
+      });
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Could not upload this file.");
+    } finally {
+      input.value = "";
+    }
   };
 
   return (
@@ -2581,12 +3151,13 @@ function MediaEditor({
         </label>
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
           {media.src ? (
-            <MediaDisplay media={media} className="h-32 w-full object-cover" autoPlay />
+            <MediaDisplay media={media} className="h-32 w-full object-cover" autoPlay onMediaError={() => setPreviewError(true)} />
           ) : (
             <div className="grid h-32 w-full place-items-center text-xs text-slate-400">No media selected</div>
           )}
         </div>
       </div>
+      {(previewError || uploadError) && <p role="alert" className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-[11px] leading-5 text-rose-800">{uploadError || "This media URL could not be loaded. Confirm that the site-media bucket is public and the file exists."}</p>}
     </div>
   );
 }
@@ -2600,28 +3171,42 @@ function MultiFileUploader({
   accept?: string;
   onFiles: (files: { src: string; alt: string; type: MediaType }[]) => void;
 }) {
+  const [uploadError, setUploadError] = useState("");
+  const [uploading, setUploading] = useState(false);
   const handleChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files || files.length === 0) return;
-    const results: { src: string; alt: string; type: MediaType }[] = [];
-    for (const file of Array.from(files)) {
-      const src = await uploadFile(file);
-      results.push({
-        src,
-        alt: file.name,
-        type: file.type.startsWith("video") ? "video" : "image",
-      });
+    const input = event.currentTarget;
+    const files = Array.from(input.files ?? []);
+    if (files.length === 0) return;
+    setUploadError("");
+    setUploading(true);
+    try {
+      const results: { src: string; alt: string; type: MediaType }[] = [];
+      for (const file of files) {
+        const src = await uploadFile(file);
+        results.push({
+          src,
+          alt: file.name,
+          type: file.type.startsWith("video") ? "video" : "image",
+        });
+      }
+      onFiles(results);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Upload failed. Check the site-media storage bucket and try again.");
+    } finally {
+      setUploading(false);
+      input.value = "";
     }
-    onFiles(results);
-    event.currentTarget.value = "";
   };
 
   return (
-    <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      {label}
-      <input type="file" accept={accept} multiple onChange={handleChange} className="sr-only" />
-    </label>
+    <div className="grid justify-items-start gap-2">
+      <label className={`inline-flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 ${uploading ? "pointer-events-none opacity-60" : ""}`}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        {uploading ? "Uploading…" : label}
+        <input type="file" accept={accept} multiple disabled={uploading} onChange={handleChange} className="sr-only" />
+      </label>
+      {uploadError && <p role="alert" className="max-w-sm text-[11px] leading-5 text-rose-700">{uploadError}</p>}
+    </div>
   );
 }
 
@@ -2781,26 +3366,53 @@ function loadSiteData(): SiteData {
 
 function migrateSiteData(saved: unknown, fallback: SiteData): SiteData {
   const merged = deepMerge(fallback, saved);
-  if (!isObject(saved) || saved.serviceCatalogVersion === 3) {
+  const sourceProjects = Array.isArray(merged.projects) ? merged.projects : fallback.projects;
+  merged.projects = sourceProjects.filter(isObject).map((project, index) => {
+    const example = fallback.projects[index] ?? fallback.projects[0];
+    return {
+      id: typeof project.id === "string" ? project.id : createId(),
+      name: typeof project.name === "string" ? project.name : "Untitled project",
+      ctaLabel: typeof project.ctaLabel === "string" ? project.ctaLabel : "Explore Project",
+      category: typeof project.category === "string" ? project.category : example?.category ?? "",
+      location: typeof project.location === "string" ? project.location : "",
+      description: typeof project.description === "string" ? project.description : "",
+      media: isMediaItem(project.media) ? project.media : example?.media ?? { id: createId(), type: "image" as const, src: "", alt: "Project cover image" },
+      gallery: Array.isArray(project.gallery) ? project.gallery.filter(isMediaItem) : [],
+    };
+  });
+  const savedVersion = isObject(saved) && typeof saved.serviceCatalogVersion === "number" ? saved.serviceCatalogVersion : 0;
+  if (savedVersion >= 4) {
     return {
       ...merged,
-      serviceCatalogVersion: 3,
+      serviceCatalogVersion: 4,
       services: merged.services.map(normalizeService),
     };
   }
 
-  return {
-    ...merged,
-    serviceCatalogVersion: 3,
-    services: defaultSiteData.services.map((group) => ({
-      ...group,
-      products: group.products.map((product) => ({
-        ...product,
-        media: [...product.media],
-        subProducts: product.subProducts.map((sub) => ({ ...sub, media: [...sub.media] })),
-      })),
-    })),
-  };
+  // Upgrade the existing catalogue without discarding owner edits: retain saved
+  // text/media/prices and append any newly introduced default product systems.
+  const savedServices = Array.isArray(merged.services) ? merged.services.map(normalizeService) : [];
+  const defaultGroupTitles = new Set(defaultSiteData.services.map((group) => group.title.toLowerCase()));
+  const services = defaultSiteData.services.map((defaultGroup) => {
+    const existingGroup = savedServices.find((group) => group.title.toLowerCase() === defaultGroup.title.toLowerCase());
+    if (!existingGroup) return defaultGroup;
+    const products = [...existingGroup.products];
+    for (const defaultProduct of defaultGroup.products) {
+      const existingProduct = products.find((product) => product.name.toLowerCase() === defaultProduct.name.toLowerCase());
+      if (!existingProduct) {
+        products.push(defaultProduct);
+        continue;
+      }
+      const subProducts = [...existingProduct.subProducts];
+      for (const defaultSub of defaultProduct.subProducts) {
+        if (!subProducts.some((sub) => sub.name.toLowerCase() === defaultSub.name.toLowerCase())) subProducts.push(defaultSub);
+      }
+      Object.assign(existingProduct, { subProducts });
+    }
+    return { ...existingGroup, products };
+  });
+  services.push(...savedServices.filter((group) => !defaultGroupTitles.has(group.title.toLowerCase())));
+  return { ...merged, serviceCatalogVersion: 4, services };
 }
 
 function normalizeService(value: ServiceCard): ServiceCard {
@@ -2810,12 +3422,16 @@ function normalizeService(value: ServiceCard): ServiceCard {
         name: typeof product.name === "string" ? product.name : "Untitled Product",
         description: typeof product.description === "string" ? product.description : "",
         media: Array.isArray(product.media) ? product.media.filter(isMediaItem) : [],
+        priceFrom: typeof product.priceFrom === "number" && Number.isFinite(product.priceFrom) ? product.priceFrom : null,
+        priceUnit: typeof product.priceUnit === "string" && product.priceUnit ? product.priceUnit : "sqm",
         subProducts: Array.isArray(product.subProducts)
           ? product.subProducts.filter(isObject).map((sub) => ({
               id: typeof sub.id === "string" ? sub.id : createId(),
               name: typeof sub.name === "string" ? sub.name : "Untitled System",
               description: typeof sub.description === "string" ? sub.description : "",
               media: Array.isArray(sub.media) ? sub.media.filter(isMediaItem) : [],
+              priceFrom: typeof sub.priceFrom === "number" && Number.isFinite(sub.priceFrom) ? sub.priceFrom : null,
+              priceUnit: typeof sub.priceUnit === "string" && sub.priceUnit ? sub.priceUnit : "sqm",
             }))
           : [],
       }))
@@ -2846,11 +3462,15 @@ function createProducts(entries: Array<[string, string, string, SubProductSeed[]
     name,
     description,
     media: [{ id: createId(), type: "image", src, alt: name }],
+    priceFrom: null,
+    priceUnit: "sqm",
     subProducts: (subs ?? []).map(([subName, subDescription, subSrc]) => ({
       id: createId(),
       name: subName,
       description: subDescription,
       media: [{ id: createId(), type: "image" as const, src: subSrc, alt: subName }],
+      priceFrom: null,
+      priceUnit: "sqm",
     })),
   }));
 }
@@ -2882,6 +3502,41 @@ function createId() {
   return Math.random().toString(36).slice(2, 10);
 }
 
+function formatPHP(amount: number) {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: "PHP",
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
+function getProjectFallbackImage(category?: string) {
+  const normalized = (category ?? "").toLowerCase();
+  if (normalized.includes("commercial") || normalized.includes("office") || normalized.includes("store")) return "/images/commercial.jpg";
+  if (normalized.includes("hospitality") || normalized.includes("cafe") || normalized.includes("resort")) return "/images/cafe.jpg";
+  if (normalized.includes("residential") || normalized.includes("home") || normalized.includes("villa")) return "/images/residential.jpg";
+  return "/images/hero-main.jpg";
+}
+
+function parseOptionalPrice(value: string): number | null {
+  if (!value.trim()) return null;
+  const amount = Number(value);
+  return Number.isFinite(amount) ? Math.max(0, amount) : null;
+}
+
+function isAreaPriceUnit(unit: string) {
+  const normalized = unit.toLowerCase().replace(/\s/g, "");
+  return normalized.includes("sqm") || normalized.includes("m²") || normalized.includes("m2") || normalized.includes("squaremeter");
+}
+
+function calculateEstimate(priceFrom: number, unit: string, measurements: { width: string; height: string; quantity: string }) {
+  const quantity = Math.max(0, Number(measurements.quantity) || 0);
+  const area = isAreaPriceUnit(unit)
+    ? Math.max(0, Number(measurements.width) || 0) * Math.max(0, Number(measurements.height) || 0)
+    : 1;
+  return priceFrom * quantity * area;
+}
+
 export function readFileAsDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -2891,11 +3546,14 @@ export function readFileAsDataUrl(file: File) {
   });
 }
 
-// Upload to Supabase Storage when admin is signed in; fall back to inline data URL otherwise.
+// Upload media to Supabase Storage for signed-in Admins. A failed cloud upload is
+// surfaced instead of silently storing a large data URL in the site content JSON.
 export async function uploadFile(file: File): Promise<string> {
-  if (!currentPasskey) {
-    return readFileAsDataUrl(file);
+  if (file.size > 14 * 1024 * 1024) {
+    throw new Error("This file is over 14 MB. Please choose a smaller image or video.");
   }
+  if (!currentPasskey) return readFileAsDataUrl(file);
+
   try {
     const buf = await file.arrayBuffer();
     let binary = "";
@@ -2915,7 +3573,7 @@ export async function uploadFile(file: File): Promise<string> {
     });
     return url;
   } catch (err) {
-    console.error("Upload failed, falling back to data URL:", err);
-    return readFileAsDataUrl(file);
+    console.error("Cloud media upload failed:", err);
+    throw new Error(err instanceof Error ? `Cloud upload failed: ${err.message}` : "Cloud upload failed. Check the Supabase media bucket and try again.");
   }
 }
